@@ -1,0 +1,32 @@
+[
+  {
+    "item_id": "10001",
+    "plant": "KP",
+    "location": "STORE EE",
+    "shelf": "E1-1",
+    "brand": "Sick",
+    "category": "Sensor",
+    "matcode": "S5321714",
+    "description": "Universal bar clamp system",
+    "unit_rate": "172",
+    "total": "1",
+    "unit": "PC",
+    "amount": "172",
+    "image_url": "https://m.media-amazon.com/images/I/61xJzs1G0kL.jpg"
+  },
+  {
+    "item_id": "10002",
+    "plant": "KP",
+    "location": "STORE EE",
+    "shelf": "E1-2",
+    "brand": "Omron",
+    "category": "PLC",
+    "matcode": "PLC001",
+    "description": "PLC Controller",
+    "unit_rate": "500",
+    "total": "2",
+    "unit": "PC",
+    "amount": "1000",
+    "image_url": "https://m.media-amazon.com/images/I/71WwQ6f8YyL.jpg"
+  }
+]

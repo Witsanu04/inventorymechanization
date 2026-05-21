@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store KP</title>
+</head>
+<body>
+
+<h1>Store KP</h1>
+
+<table border="1">
+    <tr>
+        <th>Item ID</th>
+        <th>Brand</th>
+        <th>Description</th>
+        <th>Total</th>
+    </tr>
+
+    {% for item in products %}
+    <tr>
+        <td>{{ item['Item ID'] }}</td>
+        <td>{{ item['Brand'] }}</td>
+        <td>{{ item['Description'] }}</td>
+        <td>{{ item['Total'] }}</td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+</body>
+</html>

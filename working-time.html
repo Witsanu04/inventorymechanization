@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Records | KP System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
+        :root { --primary: #00ff99; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.7); --border: rgba(255, 255, 255, 0.1); }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: white; 
+            font-family: 'Chakra Petch', sans-serif; 
+            padding-top: 110px; 
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* --- Background Animation --- */
+        .warehouse-scene {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: -1; overflow: hidden; background: #020617;
+        }
+        .warehouse-img {
+            width: 115%; height: 115%; object-fit: cover;
+            filter: brightness(0.2) contrast(1.1);
+            animation: walkForward 18s infinite linear;
+            background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070');
+            background-size: cover;
+        }
+        @keyframes walkForward { 0% { transform: scale(1.0); } 100% { transform: scale(1.15); } }
+
+        /* --- TOP NAV (Sidebar ด้านบน) --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 90px; z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(2, 6, 23, 0.4);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-pill {
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 6px; border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .nav-item {
+            padding: 10px 18px; border-radius: 15px; font-size: 0.85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #94a3b8; text-decoration: none;
+        }
+        .nav-item.active { background: var(--primary); color: #020617; box-shadow: 0 0 15px rgba(0, 255, 153, 0.4); }
+        .nav-item:not(.active):hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateY(-1px); }
+        
+        .nav-logout { color: #ef4444 !important; }
+        .nav-logout:hover { background: rgba(239, 68, 68, 0.1) !important; }
+
+        @media (max-width: 768px) {
+            .nav-text { display: none; } /* ซ่อนข้อความบนมือถือ */
+            .nav-item { padding: 12px; }
+            .top-nav { height: 75px; }
+        }
+
+        /* --- UI Elements --- */
+        .glass-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            backdrop-filter: blur(15px); 
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .search-input { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); transition: 0.3s; }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 255, 153, 0.1); }
+        
+        /* Status Badge Colors */
+        .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
+        .status-done { background: rgba(0, 255, 153, 0.1); color: #00ff99; border-color: rgba(0, 255, 153, 0.2); }
+        .status-pending { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
+        .status-urgent { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+    </style>
+</head>
+<body>
+    
+    <script>
+    if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+    .then(() => console.log("Service Worker Registered"));
+    }
+
+    </script>
+<link rel="manifest" href="manifest.json">
+    </script>
+    <div class="warehouse-scene"><div class="warehouse-img"></div></div>
+
+    <nav class="top-nav px-4">
+        <div class="nav-pill">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house-chimney"></i>
+                <span class="nav-text">หน้าแรก</span>
+            </a>
+            <a href="dashboard.html" class="nav-item">
+                <i class="fa-solid fa-chart-simple"></i>
+                <span class="nav-text">ภาพรวม</span>
+            </a>
+            <a href="working-time.html" class="nav-item active">
+                <i class="fa-solid fa-user-clock"></i>
+                <span class="nav-text">บันทึกงาน</span>
+            </a>
+            <a href="inventory-select.html" class="nav-item">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span class="nav-text">สต็อก</span>
+            </a>
+            <div class="w-[1px] h-6 bg-white/10 mx-1"></div>
+            <button onclick="handleLogout()" class="nav-item nav-logout" title="ออกจากระบบ">
+                <i class="fa-solid fa-power-off"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold uppercase tracking-tighter text-white">Working Records</h1>
+                <p class="text-xs text-[#00ff99] tracking-[0.3em] font-bold mt-1">ประวัติการทำงานแผนก Mechanization</p>
+            </div>
+            
+            <div class="flex gap-3 w-full md:w-auto">
+                <div class="relative flex-1 md:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                    <input type="text" id="workSearch" onkeyup="filterWorkData()" 
+                           placeholder="ค้นหาพนักงาน หรือ ชื่องาน..." 
+                           class="search-input w-full rounded-2xl pl-12 pr-6 py-4 text-sm outline-none text-white backdrop-blur-md">
+                </div>
+                <button onclick="loadWorkData()" class="bg-white/5 hover:bg-[#00ff99]/20 p-4 rounded-2xl border border-white/5 transition-all group">
+                    <i class="fa-solid fa-rotate text-[#00ff99] group-hover:rotate-180 transition-transform duration-500"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-900/60 text-[11px] uppercase tracking-[0.2em] text-slate-400 border-b border-white/5">
+                        <tr>
+                            <th class="p-6 font-bold">พนักงาน (Staff)</th>
+                            <th class="p-6 font-bold">งานที่ปฏิบัติ (Project/Task)</th>
+                            <th class="p-6 font-bold text-center">วันที่ (Date)</th>
+                            <th class="p-6 font-bold text-center">สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workTableBody" class="divide-y divide-white/[0.03]">
+                        <tr>
+                            <td colspan="4" class="p-24 text-center">
+                                <div class="flex flex-col items-center gap-4">
+                                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-[#00ff99]"></i>
+                                    <span class="text-slate-400 font-bold tracking-widest text-xs uppercase">กำลังโหลดประวัติงาน...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="emptyMsg" class="hidden text-center p-20 text-slate-500 italic">ไม่พบข้อมูลที่ท่านค้นหา...</div>
+    </main>
+
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
+        function handleLogout() { sessionStorage.clear(); window.location.href = "login.html"; }
+
+        const sheetID = "1ZaWf8sYX0wC7ege0evyj9R2EIsA5nUOROprzCPdscmE"; 
+        const url = `https://opensheet.elk.sh/${sheetID}/Work`; 
+        let workData = [];
+
+        async function loadWorkData() {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error();
+                workData = await res.json();
+                renderTable(workData);
+            } catch(e) { 
+                document.getElementById("workTableBody").innerHTML = `
+                    <tr><td colspan="4" class="p-20 text-center text-red-400">เชื่อมต่อฐานข้อมูลล้มเหลว</td></tr>`; 
+            }
+        }
+
+        function renderTable(items) {
+            const tbody = document.getElementById("workTableBody");
+            const emptyMsg = document.getElementById("emptyMsg");
+            tbody.innerHTML = "";
+            
+            if (items.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            } else { emptyMsg.classList.add('hidden'); }
+
+            items.forEach(row => {
+                const cleanRow = {};
+                Object.keys(row).forEach(k => cleanRow[k.trim().toLowerCase().replace(/\s/g, '')] = row[k]);
+                
+                const staff = cleanRow['staffname'] || cleanRow['ชื่อ'] || "N/A";
+                const task = cleanRow['task'] || cleanRow['งาน'] || "-";
+                const date = cleanRow['date'] || cleanRow['วันที่'] || "-";
+                const statusValue = (cleanRow['status'] || "Pending").trim();
+
+                let statusClass = "status-pending";
+                if (statusValue.includes("เสร็จ") || statusValue.toLowerCase() === "done") statusClass = "status-done";
+                if (statusValue.includes("ด่วน") || statusValue.includes("แก้")) statusClass = "status-urgent";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/[0.04] transition-colors group">
+                        <td class="p-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-user-gear text-blue-400 text-sm"></i>
+                                </div>
+                                <div class="font-bold text-slate-100 group-hover:text-[#00ff99]">${staff}</div>
+                            </div>
+                        </td>
+                        <td class="p-6 text-sm text-slate-300">${task}</td>
+                        <td class="p-6 text-center text-slate-400 text-sm font-bold">${date}</td>
+                        <td class="p-6 text-center"><span class="status-badge ${statusClass}">${statusValue}</span></td>
+                    </tr>`;
+            });
+        }
+
+        function filterWorkData() {
+            const key = document.getElementById("workSearch").value.toLowerCase();
+            const filtered = workData.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(key)));
+            renderTable(filtered);
+        }
+
+        window.onload = loadWorkData;
+    </script>
+</body>
+</html>

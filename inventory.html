@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory | KP System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
+        :root { --primary: #00ff99; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.7); --border: rgba(255, 255, 255, 0.1); }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: white; 
+            font-family: 'Chakra Petch', sans-serif; 
+            padding-top: 110px; 
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .warehouse-scene { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; background: #020617; }
+        .warehouse-img { 
+            width: 100%; height: 100%; object-fit: cover; filter: brightness(0.15); 
+            background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070'); 
+            background-size: cover; background-position: center; 
+        }
+
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 90px; z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(2, 6, 23, 0.4);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-pill {
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 6px; border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .nav-item {
+            padding: 10px 18px; border-radius: 15px; font-size: 0.85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
+            color: #94a3b8; text-decoration: none;
+        }
+        .nav-item.active { background: var(--primary); color: #020617; box-shadow: 0 0 15px rgba(0, 255, 153, 0.4); }
+
+        .glass-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(15px); border-radius: 2rem; }
+        .stat-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .stat-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.05); }
+
+        .status { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; border: 1px solid currentColor; display: inline-block; }
+        .low { color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; }
+        .reorder { color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; }
+        .good { color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; }
+        
+        .img-slot { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
+        #transactionModal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 20px; }
+        .input-field { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 100%; color: white; outline: none; }
+    </style>
+</head>
+<body>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+    .then(() => console.log("Service Worker Registered"));
+    }
+    </script>
+
+    <div class="warehouse-scene"><div class="warehouse-img"></div></div>
+
+    <nav class="top-nav px-4">
+        <div class="nav-pill">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-house-chimney"></i> <span class="nav-text">หน้าแรก</span></a>
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-simple"></i> <span class="nav-text">ภาพรวม</span></a>
+            <a href="inventory-select.html" class="nav-item active"><i class="fa-solid fa-boxes-stacked"></i> <span class="nav-text">สต็อก</span></a>
+            <div class="w-[1px] h-6 bg-white/10 mx-1"></div>
+            <button onclick="handleLogout()" class="nav-item text-red-500"><i class="fa-solid fa-power-off"></i></button>
+        </div>
+    </nav>
+
+    <div id="transactionModal">
+        <div class="glass-card w-full max-w-lg p-8 border-[#00ff99]/30 border shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 class="text-3xl font-bold text-white mb-6 uppercase tracking-tighter">Tool <span class="text-[#00ff99]">Transaction</span></h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[10px] text-[#00ff99] font-bold uppercase tracking-widest mb-1 block">1. ชื่อผู้ยืม/คืน</label>
+                    <select id="opName" class="input-field text-lg font-bold"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-[#00ff99] font-bold uppercase tracking-widest mb-1 block">2. รายการอุปกรณ์</label>
+                    <input type="text" id="selectedToolDisplay" class="input-field text-lg" readonly>
+                    <p id="selectedMatCode" class="text-xs text-[#00ff99] mt-1 font-mono font-bold"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] text-[#00ff99] font-bold uppercase tracking-widest mb-1 block">3. จำนวน (PCS)</label>
+                        <input type="number" id="transQty" value="1" min="1" class="input-field text-center text-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-[#00ff99] font-bold uppercase tracking-widest mb-1 block">ประเภท</label>
+                        <select id="transType" class="input-field font-bold">
+                            <option value="OUT">ยืมออก (Borrow)</option>
+                            <option value="IN">คืนของ (Return)</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="submitData()" id="submitBtn" class="w-full bg-[#00ff99] hover:bg-[#00cc7a] text-black font-black py-4 rounded-xl text-lg transition shadow-lg">บันทึกรายการ</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
+            <div>
+                <a href="inventory-select.html" class="inline-flex items-center gap-2 text-[#00ff99] mb-4 hover:opacity-70 transition font-bold text-xs uppercase tracking-widest">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Select
+                </a>
+                <h1 class="text-5xl font-bold uppercase tracking-tighter text-white">Inventory <span class="text-[#00ff99]">KP_R1</span></h1>
+                <p class="text-[10px] text-slate-400 tracking-[0.3em] font-bold mt-2 uppercase">KP SYSTEM CONTROL | R1 STORE</p>
+            </div>
+            <div class="relative flex-1 md:w-96">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-[#00ff99]"></i>
+                <input type="text" id="searchInput" onkeyup="filterData()" placeholder="ค้นหารหัส หรือ ชื่ออุปกรณ์..." 
+                       class="w-full bg-slate-900/60 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white outline-none focus:border-[#00ff99] shadow-xl backdrop-blur-md text-sm">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="stat-card glass-card p-8 border-l-4 border-l-[#00ff99]">
+                <h3 class="text-white text-lg font-bold mb-1">จำนวนรายการทั้งหมด</h3>
+                <p id="totalItems" class="text-6xl font-black text-white leading-none my-2">0</p>
+                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total SKU Items</p>
+            </div>
+            <div class="stat-card glass-card p-8 border-l-4 border-l-blue-500">
+                <h3 class="text-blue-400 text-lg font-bold mb-1">หมวดหมู่ทั้งหมด</h3>
+                <p id="totalCategories" class="text-6xl font-black text-blue-400 leading-none my-2">0</p>
+                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total Categories</p>
+            </div>
+            <div class="stat-card glass-card p-8 border-l-4 border-l-white">
+                <h3 class="text-white text-lg font-bold mb-1">จำนวนชิ้นรวม</h3>
+                <p id="totalStock" class="text-6xl font-black text-white leading-none my-2">0</p>
+                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total Units in Stock</p>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto" style="max-height: 60vh;">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-[#1e293b] z-10 border-b border-white/10">
+                        <tr class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+                            <th class="p-5">Image</th>
+                            <th class="p-5">MatCode</th>
+                            <th class="p-5">Description</th>
+                            <th class="p-5 text-center">Stock</th>
+                            <th class="p-5 text-center">Location</th>
+                            <th class="p-5 text-center">Status</th>
+                            <th class="p-5 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-white/[0.03]"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqlBzXhKiGtOGx4fzKcul2gMKoJTEs968",
+            authDomain: "kp-inventory-system.firebaseapp.com",
+            databaseURL: "https://kp-inventory-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kp-inventory-system",
+            storageBucket: "kp-inventory-system.firebasestorage.app",
+            messagingSenderId: "776715886830",
+            appId: "1:776715886830:web:7e6fd0bb788113a00353ff"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const sheetID = "1ZaWf8sYX0wC7ege0evyj9R2EIsA5nUOROprzCPdscmE";
+        const sheetName = "Store%20KP";
+        const url = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+        let rawData = [];
+
+        const staffList = ["ADMIN", "นายอาณัติ กิตติขจร", "นายอภิชาติ พูลทอง", "นายสมควร สายเส็ง", "นายสิงห์ ร่วมรส", "นายอดิศักดิ์ เพชรนิล", "นายสมเจตน์ ไม้หอม", "นายคมสรรค์ ศรียา", "นายฉันทพล อินทสิทธิ์", "นายปริญญา สุบิน", "นายวุฒิพงษ์ เพ็ชรพราย", "นายธีรภัทร พิลึก", "นายวงศกร ระวังภัย", "นายจาตุพร ขุนพิลึก", "นายอนิรุธ เกิด"];
+
+        function setupOperatorDropdown() {
+            const opSelect = document.getElementById("opName");
+            opSelect.innerHTML = '<option value="" disabled selected>-- เลือกชื่อพนักงาน --</option>';
+            staffList.forEach(name => {
+                let opt = document.createElement("option");
+                opt.value = name; opt.textContent = name;
+                opSelect.appendChild(opt);
+            });
+            const currentLogon = sessionStorage.getItem("userName");
+            if (currentLogon) opSelect.value = currentLogon;
+        }
+
+        async function loadData(){
+            try {
+                const response = await fetch(url);
+                rawData = await response.json();
+                filterData();
+            } catch(error) { console.error(error); }
+        }
+
+        function filterData(){
+            const table = document.getElementById("tableBody");
+            const search = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = rawData.filter(item => 
+                (item.Description || "").toLowerCase().includes(search) || 
+                (item.MatCode || "").toLowerCase().includes(search)
+            );
+
+            let totalStockValue = 0;
+            let categories = new Set();
+            let rowsHtml = "";
+
+            filtered.forEach(item => {
+                const stock = parseInt(item.Total) || 0;
+                totalStockValue += stock;
+                if(item.Category) categories.add(item.Category);
+
+                let statusClass = stock <= 5 ? "low" : stock <= 20 ? "reorder" : "good";
+                let statusText = stock <= 5 ? "LOW" : stock <= 20 ? "RE-ORDER" : "READY";
+
+                rowsHtml += `<tr class="hover:bg-white/[0.02] transition">
+                    <td class="p-4"><img src="${item.Picture}" class="img-slot" onerror="this.src='https://via.placeholder.com/50'"></td>
+                    <td class="p-4 font-bold text-[#00ff99] font-mono text-sm">${item.MatCode}</td>
+                    <td class="p-4 text-xs text-slate-100">${item.Description}</td>
+                    <td class="p-4 text-center font-bold text-white">${stock}</td>
+                    <td class="p-4 text-center text-[10px] text-slate-400 uppercase font-bold">${item.LOCATION || "-"}</td>
+                    <td class="p-4 text-center"><span class="status ${statusClass}">${statusText}</span></td>
+                    <td class="p-4 text-center">
+                        <button onclick="openBorrowModal('${item.Description.replace(/'/g, "\\'")}', '${item.MatCode}')" 
+                                class="bg-[#00ff99] hover:bg-[#00cc7a] text-black px-4 py-2 rounded-lg font-bold text-[10px] transition shadow-lg">
+                            <i class="fa-solid fa-right-left"></i> ยืม / คืน
+                        </button>
+                    </td>
+                </tr>`;
+            });
+
+            table.innerHTML = rowsHtml;
+            document.getElementById("totalItems").innerText = filtered.length.toLocaleString();
+            document.getElementById("totalStock").innerText = totalStockValue.toLocaleString();
+            document.getElementById("totalCategories").innerText = categories.size.toLocaleString();
+        }
+
+        function openBorrowModal(desc, code) {
+            document.getElementById("transactionModal").style.display = "flex";
+            document.getElementById("selectedToolDisplay").value = desc;
+            document.getElementById("selectedMatCode").innerText = "CODE: " + code;
+        }
+
+        function closeModal() { document.getElementById("transactionModal").style.display = "none"; }
+
+        async function submitData() {
+            const opName = document.getElementById("opName").value;
+            const toolName = document.getElementById("selectedToolDisplay").value;
+            const matCode = document.getElementById("selectedMatCode").innerText.replace("CODE: ", "");
+            const qty = document.getElementById("transQty").value;
+            const type = document.getElementById("transType").value;
+            const btn = document.getElementById("submitBtn");
+
+            if(!opName) { alert("กรุณาเลือกชื่อพนักงาน!"); return; }
+
+            btn.disabled = true; btn.innerText = "กำลังบันทึก...";
+
+            try {
+                await db.ref('all_transactions').push({
+                    timestamp: new Date().toISOString(),
+                    opName, toolName, matCode, qty, type,
+                    store: "KP_R1", adminStatus: "Pending"
+                });
+                alert("✅ บันทึกรายการสำเร็จ!");
+                closeModal();
+                loadData();
+            } catch (e) { alert("เกิดข้อผิดพลาด!"); }
+            finally { btn.disabled = false; btn.innerText = "บันทึกรายการ"; }
+        }
+
+        function handleLogout() { sessionStorage.clear(); window.location.href = "login.html"; }
+        window.onload = () => { loadData(); setupOperatorDropdown(); };
+    </script>
+</body>
+</html>

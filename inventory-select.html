@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Store | KP System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
+        :root { --primary: #00ff99; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.6); --border: rgba(255, 255, 255, 0.1); }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: white; 
+            font-family: 'Chakra Petch', sans-serif; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* --- Background Animation --- */
+        .warehouse-scene {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: -1; overflow: hidden; background: #020617;
+        }
+        .warehouse-img {
+            width: 110%; height: 110%; object-fit: cover;
+            filter: brightness(0.2) contrast(1.2) blur(2px);
+            animation: moveAround 30s infinite alternate ease-in-out;
+            background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070');
+            background-size: cover;
+        }
+        @keyframes moveAround {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.1) translate(-2%, -2%); }
+        }
+
+        .glass-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            backdrop-filter: blur(20px); 
+            border-radius: 2.5rem;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 40px rgba(0, 255, 153, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .btn-open {
+            background: rgba(0, 255, 153, 0.1);
+            border: 1px solid rgba(0, 255, 153, 0.3);
+            color: var(--primary);
+            transition: 0.3s;
+        }
+        .btn-open:hover {
+            background: var(--primary);
+            color: #020617;
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.4);
+        }
+
+        /* ปุ่ม Back มุมซ้ายบน */
+        .back-link {
+            position: fixed; top: 2rem; left: 2rem;
+            color: rgba(255,255,255,0.4); text-decoration: none;
+            font-weight: bold; font-size: 0.75rem; letter-spacing: 0.2em;
+            display: flex; align-items: center; gap: 10px; transition: 0.3s;
+        }
+        .back-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="warehouse-scene"><div class="warehouse-img"></div></div>
+
+    <a href="index.html" class="back-link uppercase">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="container max-w-5xl px-6 py-12">
+        <div class="text-center mb-16">
+            <h1 class="text-5xl font-bold tracking-tighter mb-4 uppercase italic">Select Warehouse</h1>
+            <p class="text-slate-400 tracking-[0.4em] text-xs font-bold uppercase">เลือกคลังสินค้าเพื่อดำเนินการจัดการสต็อก</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            
+            <div class="glass-card p-10 flex flex-col items-center text-center group">
+                <div class="w-20 h-20 bg-[#00ff99]/10 rounded-3xl flex items-center justify-center mb-8 border border-[#00ff99]/20 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fa-solid fa-microchip text-[#00ff99] text-4xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold mb-3 tracking-tight">STORE KP_25</h2>
+                <p class="text-slate-400 text-sm mb-10 leading-relaxed">Mechanization Department<br>ระบบจัดการสต็อกอะไหล่เครื่องจักรหลัก</p>
+                <a href="inventory.html" class="btn-open w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-sm">
+                    Open KP_25
+                </a>
+            </div>
+
+            <div class="glass-card p-10 flex flex-col items-center text-center group">
+                <div class="w-20 h-20 bg-orange-500/10 rounded-3xl flex items-center justify-center mb-8 border border-orange-500/20 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fa-solid fa-warehouse text-orange-500 text-4xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold mb-3 tracking-tight">STORE KP_R1</h2>
+                <p class="text-slate-400 text-sm mb-10 leading-relaxed">Tool Store<br>คลังเก็บอุปกรณ์เครื่องมือเม็ดมีดปลอก</p>
+                <a href="inventory-kpr1.html" class="btn-open w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-sm" style="color: #f97316; border-color: rgba(249,115,22,0.3); background: rgba(249,115,22,0.1);">
+                    Open KP_R1
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // เช็ค Login เหมือนหน้าอื่นๆ
+        if (sessionStorage.getItem("isLoggedIn") !== "true") {
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

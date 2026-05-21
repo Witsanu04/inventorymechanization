@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Hub | Mechanization Department</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
+        :root { --primary: #00ff99; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.72); --border: rgba(255, 255, 255, 0.08); }
+        
+        body { background: var(--bg-dark); color: white; font-family: 'Chakra Petch', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        
+        /* แก้ไขส่วนพื้นหลัง */
+        .warehouse-scene { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; overflow: hidden; }
+        .warehouse-img { 
+            width: 110%; 
+            height: 110%; 
+            object-fit: cover; 
+            filter: brightness(0.35) blur(1px); /* ปรับความสว่างจาก 0.18 เป็น 0.35 ให้เห็นรูปชัดขึ้น */
+            background-image: url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070'); 
+            animation: slowMove 20s infinite alternate ease-in-out; 
+        }
+        @keyframes slowMove { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+        
+        .vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 10%, rgba(2,6,23,0.96) 75%); }
+        
+        .glass-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(18px); transition: 0.25s; border-radius: 2.5rem; }
+        .glass-card:hover { border-color: rgba(0,255,153,0.3); transform: translateY(-4px); box-shadow: 0 10px 30px -10px rgba(0,255,153,0.3); }
+        
+        .module-blue { border-bottom: 4px solid #3b82f6; }
+        .module-orange { border-bottom: 4px solid #f97316; }
+        .module-green { border-bottom: 4px solid #00ff99; }
+        
+        .cta-btn { display: block; width: 100%; text-align: center; padding: 0.85rem; border-radius: 1rem; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; text-decoration: none; transition: 0.3s; }
+        .module-blue .cta-btn { background: #3b82f6; color: white; }
+        .module-orange .cta-btn { background: #f97316; color: white; }
+        .module-green .cta-btn { background: #00ff99; color: #020617; }
+        .cta-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+        
+        .stat-card { background: rgba(11,17,32,0.8); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(18px); transition: 0.3s; }
+        .stat-card:hover { border-color: rgba(255,255,255,0.2); }
+        .stat-value { font-size: 2.8rem; font-weight: 700; line-height: 1; }
+        
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-dot.online { background: #00ff99; box-shadow: 0 0 10px #00ff99; animation: pulse 2s infinite; }
+        .status-dot.offline { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        .status-dot.connecting { background: #f59e0b; animation: pulse 1s infinite; }
+        
+        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+        
+        #offlineBanner { display: none; align-items: center; gap: 0.75rem; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; }
+        #offlineBanner.show { display: flex; }
+    </style>
+</head>
+<body>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log("SW Registered:", reg.scope))
+                    .catch(err => console.log("SW Failed:", err));
+            });
+        }
+    </script>
+    <link rel="manifest" href="manifest.json">
+
+    <div class="warehouse-scene">
+        <div class="warehouse-img"></div>
+        <div class="vignette"></div>
+    </div>
+    
+    <div class="admin-corner" style="position:absolute; top:1.5rem; right:1.5rem; z-index: 50;">
+        <a href="login.html" class="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full transition-all hover:bg-red-500/20 text-decoration-none">
+            <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">ระบบจัดการ (Admin)</span>
+            <i class="fa-solid fa-user-shield text-red-500"></i>
+        </a>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 pt-10">
+            <div class="text-center md:text-left">
+                <h1 class="text-5xl md:text-7xl font-bold uppercase tracking-tighter italic leading-tight">
+                    MECHANIZATION<br><span class="text-[#00ff99] not-italic">DEPARTMENT</span>
+                </h1>
+                <p class="text-xs text-[#00ff99] tracking-[0.4em] font-bold opacity-80 uppercase mt-2">ระบบจัดการคลังสินค้าอัจฉริยะ (Store 25 & R1)</p>
+            </div>
+            <div class="flex gap-4 items-center">
+                <div class="text-right hidden md:block border-r border-white/10 pr-4">
+                    <p class="text-slate-500 text-[10px] font-bold tracking-widest uppercase">System Status</p>
+                    <p class="text-sm font-bold uppercase flex items-center justify-end gap-1">
+                        <span class="status-dot connecting" id="statusDot"></span>
+                        <span id="statusText">กำลังเชื่อมต่อ...</span>
+                    </p>
+                </div>
+                <div class="w-16 h-16 bg-[#00ff99]/20 rounded-2xl flex items-center justify-center border border-[#00ff99]/40">
+                    <i class="fa-solid fa-microchip text-[#00ff99] text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="offlineBanner" class="text-xs">
+            <i class="fa-solid fa-triangle-exclamation text-red-400 text-lg"></i>
+            <span class="text-red-300"><b>การเชื่อมต่อขัดข้อง:</b> ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบสถานะอินเทอร์เน็ต</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="glass-card module-blue p-10 flex flex-col justify-between h-80">
+                <div>
+                    <i class="fa-solid fa-chart-line text-4xl text-blue-400 mb-5"></i>
+                    <h3 class="text-2xl font-bold italic underline underline-offset-4 decoration-blue-500/50">System Overview</h3>
+                    <p class="text-slate-300 text-sm mt-4 font-light leading-relaxed">รายงานสถิติและภาพรวมสินค้าคงคลัง<br><span class="text-blue-400 font-bold">รวมทั้ง 2 สโตร์ (25 & R1)</span></p>
+                </div>
+                <a href="dashboard.html" class="cta-btn">ดูรายงานวิเคราะห์</a>
+            </div>
+
+            <div class="glass-card module-orange p-10 flex flex-col justify-between h-80">
+                <div>
+                    <i class="fa-solid fa-user-clock text-4xl text-orange-400 mb-5"></i>
+                    <h3 class="text-2xl font-bold italic underline underline-offset-4 decoration-orange-500/50">Working Time</h3>
+                    <p class="text-slate-300 text-sm mt-4 font-light leading-relaxed">บันทึกเวลาปฏิบัติงานของพนักงาน<br><span class="text-orange-400 font-bold">ระบบลงเวลาดิจิทัล</span></p>
+                </div>
+                <a href="working-time.html" class="cta-btn">ลงเวลาทำงาน</a>
+            </div>
+
+            <div class="glass-card module-green p-10 flex flex-col justify-between h-80">
+                <div>
+                    <i class="fa-solid fa-boxes-stacked text-4xl text-[#00ff99] mb-5"></i>
+                    <h3 class="text-2xl font-bold italic underline underline-offset-4 decoration-[#00ff99]/50">Inventory Stock</h3>
+                    <p class="text-slate-300 text-sm mt-4 font-light leading-relaxed">จัดการข้อมูลสินค้าในคลัง<br><span class="text-[#00ff99] font-bold">รับเข้า - เบิกออก - เช็กสต็อก</span></p>
+                </div>
+                <a href="inventory-select.html" class="cta-btn">จัดการสต็อกสินค้า</a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="stat-card p-8 rounded-3xl text-center">
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-3 tracking-widest">รายการสินค้าทั้งหมด (Total Items)</p>
+                <div id="dashTotalItems" class="stat-value text-white">--</div>
+            </div>
+            <div class="stat-card p-8 rounded-3xl text-center border-orange-500/20">
+                <p class="text-[10px] text-orange-500 font-bold uppercase mb-3 tracking-widest">สินค้าใกล้หมด (Low Stock ≤ 5)</p>
+                <div id="dashLowStock" class="stat-value text-orange-400">--</div>
+            </div>
+            <div class="stat-card p-8 rounded-3xl text-center border-red-500/30">
+                <p class="text-[10px] text-red-500 font-bold uppercase mb-3 tracking-widest">สินค้าหมด (Out of Stock)</p>
+                <div id="dashOutOfStock" class="stat-value text-red-500">--</div>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <p class="text-[10px] text-slate-600 uppercase tracking-[0.3em] font-bold">
+                อัปเดตล่าสุด: <span id="updateTime" class="text-slate-400">--:--</span> | วันที่: <span id="updateDate" class="text-slate-400">--/--/--</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqlBzXhKiGtOGx4fzKcul2gMKoJTEs968",
+            authDomain: "kp-inventory-system.firebaseapp.com",
+            databaseURL: "https://kp-inventory-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kp-inventory-system",
+            storageBucket: "kp-inventory-system.firebasestorage.app",
+            messagingSenderId: "776715886830",
+            appId: "1:776715886830:web:7e6fd0bb788113a00353ff"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const id1 = "1ZaWf8sYX0wC7ege0evyj9R2EIsA5nUOROprzCPdscmE";
+        const id2 = "1wKEYLTXcg7LCwo4qFpVXUgA4WNyRGIGDeQocqu-7KjU";
+        const name1 = "KP_25"; 
+        const name2 = "KP_R1"; 
+
+        async function fetchAllStats() {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            const banner = document.getElementById('offlineBanner');
+            
+            try {
+                const [resp1, resp2] = await Promise.all([
+                    fetch(`https://docs.google.com/spreadsheets/d/${id1}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name1)}`),
+                    fetch(`https://docs.google.com/spreadsheets/d/${id2}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name2)}`)
+                ]);
+
+                const txt1 = await resp1.text();
+                const txt2 = await resp2.text();
+
+                const json1 = JSON.parse(txt1.substr(47).slice(0, -2));
+                const json2 = JSON.parse(txt2.substr(47).slice(0, -2));
+
+                const allRows = [...json1.table.rows, ...json2.table.rows];
+                const cols = json1.table.cols.map(c => (c.label || "").toLowerCase().trim());
+                const totalIdx = cols.indexOf("total");
+
+                let outOfStock = 0, lowStockCount = 0, itemCount = 0;
+
+                allRows.forEach(r => {
+                    if (r.c && r.c[0]) { 
+                        itemCount++;
+                        let stockVal = (totalIdx !== -1) ? r.c[totalIdx] : r.c[6];
+                        let stock = (stockVal && stockVal.v !== null) ? Number(stockVal.v) : 0;
+                        
+                        if (stock <= 0) outOfStock++;
+                        else if (stock <= 5) lowStockCount++;
+                    }
+                });
+
+                document.getElementById('dashTotalItems').textContent = itemCount.toLocaleString();
+                document.getElementById('dashLowStock').textContent = lowStockCount.toLocaleString();
+                document.getElementById('dashOutOfStock').textContent = outOfStock.toLocaleString();
+
+                const now = new Date();
+                document.getElementById('updateTime').textContent = now.toLocaleTimeString('th-TH');
+                document.getElementById('updateDate').textContent = now.toLocaleDateString('th-TH');
+
+                dot.className = "status-dot online";
+                text.textContent = "เชื่อมต่อสำเร็จ (Online)";
+                text.style.color = "#00ff99";
+                banner.classList.remove('show');
+
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                dot.className = "status-dot offline";
+                text.textContent = "ขาดการเชื่อมต่อ (Offline)";
+                text.style.color = "#ef4444";
+                banner.classList.add('show');
+            }
+        }
+
+        window.onload = fetchAllStats;
+        setInterval(fetchAllStats, 60000); 
+    </script>
+</body>
+</html>

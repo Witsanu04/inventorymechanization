@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | KP System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
+        :root { --primary: #00ff99; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.6); --border: rgba(255, 255, 255, 0.1); }
+        body { background: var(--bg-dark); color: white; font-family: 'Chakra Petch', sans-serif; padding-top: 110px; min-height: 100vh; margin: 0; }
+        .back-floating { position: fixed; top: 1.5rem; left: 1.5rem; z-index: 2000; display: flex; align-items: center; gap: 0.75rem; color: rgba(255,255,255,0.5); transition: 0.3s; text-decoration: none; }
+        .back-floating:hover { color: var(--primary); }
+        .back-circle { width: 35px; height: 35px; border-radius: 50%; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .back-floating:hover .back-circle { border-color: var(--primary); transform: translateX(-3px); }
+        .warehouse-scene { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; overflow: hidden; background: #020617; }
+        .warehouse-img { width: 115%; height: 115%; object-fit: cover; filter: brightness(0.25) contrast(1.1); animation: walkForward 20s infinite linear; background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070'); background-size: cover; }
+        @keyframes walkForward { 0% { transform: scale(1.0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: scale(1.2); opacity: 0; } }
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 100px; z-index: 1000; display: flex; justify-content: center; align-items: center; background: rgba(2, 6, 23, 0.3) !important; border-bottom: 1px solid var(--border); backdrop-filter: blur(15px); }
+        .nav-container { display: flex; gap: 10px; background: rgba(15, 23, 42, 0.5); padding: 8px; border-radius: 30px; border: 1px solid rgba(0, 255, 153, 0.2); }
+        .nav-link { padding: 12px 24px; border-radius: 22px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; transition: 0.3s; text-decoration: none; }
+        .nav-link.active { background: var(--primary); color: #020617; box-shadow: 0 0 25px rgba(0, 255, 153, 0.4); }
+        .nav-link.inactive { color: #94a3b8; }
+        .nav-link.inactive:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+        .glass-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(12px); border-radius: 2.5rem; transition: transform 0.3s ease; }
+        .glass-card:hover { transform: translateY(-5px); border-color: rgba(0, 255, 153, 0.3); }
+        .stat-value { font-size: 2.8rem; font-weight: 800; line-height: 1; }
+    </style>
+</head>
+<body>
+    <script>
+     if ('serviceWorker' in navigator) {
+     navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Service Worker Registered"));
+     }
+    </script>
+<link rel="manifest" href="manifest.json">
+    <div class="warehouse-scene"><div class="warehouse-img"></div></div>
+
+    <a href="index.html" class="back-floating">
+        <div class="back-circle"><i class="fa-solid fa-chevron-left text-xs"></i></div>
+        <span class="text-[10px] font-bold uppercase tracking-[0.2em]">หน้าหลัก</span>
+    </a>
+
+    <nav class="top-nav px-4">
+        <div class="nav-container">
+            <a href="index.html" class="nav-link inactive"><i class="fa-solid fa-house"></i> <span class="hidden md:inline">หน้าแรก</span></a>
+            <a href="dashboard.html" class="nav-link active"><i class="fa-solid fa-chart-line"></i> <span class="hidden md:inline">ภาพรวมคลัง</span></a>
+            <a href="working-time.html" class="nav-link inactive"><i class="fa-solid fa-user-clock"></i> <span class="hidden md:inline">บันทึกเวลา</span></a>
+            <a href="inventory-select.html" class="nav-link inactive"><i class="fa-solid fa-boxes-stacked"></i> <span class="hidden md:inline">สต็อก</span></a>
+            <a href="#" onclick="handleLogout()" class="nav-link text-red-500"><i class="fa-solid fa-power-off"></i></a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="mb-10 text-center md:text-left">
+            <h1 class="text-4xl font-bold uppercase tracking-tighter text-white">Warehouse Overview</h1>
+            <p class="text-xs text-[#00ff99] tracking-[0.3em] font-bold mt-1">แดชบอร์ดสรุปข้อมูลคลังสินค้า KP_25 & KP_R1</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="glass-card p-8">
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2">จำนวนรายการทั้งหมด</p>
+                <div id="totalItems" class="stat-value text-white">---</div>
+                <p class="text-[10px] text-slate-500 mt-2 italic">Total SKU Items</p>
+            </div>
+            
+            <div class="glass-card p-8 border-red-500/20">
+                <p class="text-red-500 text-[10px] font-bold uppercase tracking-widest mb-2">สินค้าใกล้หมด</p>
+                <div id="lowStock" class="stat-value text-red-500">---</div>
+                <p class="text-[10px] text-slate-500 mt-2 italic">Low Stock (≤ 5 Units)</p>
+            </div>
+
+            <div class="glass-card p-8 border-blue-500/20">
+                <p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-2">จำนวนชิ้นรวม</p>
+                <div id="totalQty" class="stat-value text-blue-400">---</div>
+                <p class="text-[10px] text-slate-500 mt-2 italic">Total Units in Stock</p>
+            </div>
+
+            <div class="glass-card p-8">
+                <p class="text-[#00ff99] text-[10px] font-bold uppercase tracking-widest mb-2">สถานะการเชื่อมต่อ</p>
+                <div class="stat-value text-[#00ff99] text-xl flex items-center gap-3 py-4">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff99] opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-[#00ff99]"></span>
+                    </span>
+                    ONLINE
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1 italic">Real-time Data Synced</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="glass-card p-8">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-[#00ff99] mb-8 italic underline decoration-1 underline-offset-8">สัดส่วนสต็อกสินค้า (Stock Distribution)</h3>
+                <div class="h-[300px]"><canvas id="statusChart"></canvas></div>
+            </div>
+            <div class="glass-card p-8">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-blue-400 mb-8 italic underline decoration-1 underline-offset-8">5 อันดับหมวดหมู่สินค้าสูงสุด (Top Categories)</h3>
+                <div class="h-[300px]"><canvas id="categoryChart"></canvas></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
+        function handleLogout() { sessionStorage.clear(); window.location.href = "login.html"; }
+
+        const id1 = "1ZaWf8sYX0wC7ege0evyj9R2EIsA5nUOROprzCPdscmE";
+        const name1 = "KP_25";
+        const id2 = "1wKEYLTXcg7LCwo4qFpVXUgA4WNyRGIGDeQocqu-7KjU";
+        const name2 = "KP_R1";
+
+        let statusChartObj = null;
+        let categoryChartObj = null;
+
+        async function fetchData(id, sheetName) {
+            const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+            const res = await fetch(url);
+            const text = await res.text();
+            const json = JSON.parse(text.substr(47).slice(0, -2));
+            
+            const cols = json.table.cols.map(c => (c.label || "").toLowerCase().trim());
+            const totalIdx = cols.indexOf("total");
+            const catIdx = cols.indexOf("category");
+
+            return json.table.rows.map(row => ({
+                Total: (totalIdx !== -1 && row.c[totalIdx]) ? (Number(row.c[totalIdx].v) || 0) : 0,
+                Category: (catIdx !== -1 && row.c[catIdx]) ? (row.c[catIdx].v || "ไม่ระบุ") : "ไม่ระบุ"
+            }));
+        }
+
+        async function loadDashboard() {
+            try {
+                const [data1, data2] = await Promise.all([
+                    fetchData(id1, name1),
+                    fetchData(id2, name2)
+                ]);
+
+                const combinedData = [...data1, ...data2];
+                let lowStock = 0, totalUnits = 0, catMap = {};
+
+                combinedData.forEach(item => {
+                    totalUnits += item.Total;
+                    if(item.Total <= 5) lowStock++;
+                    catMap[item.Category] = (catMap[item.Category] || 0) + item.Total;
+                });
+
+                document.getElementById("totalItems").innerText = combinedData.length.toLocaleString();
+                document.getElementById("lowStock").innerText = lowStock.toLocaleString();
+                document.getElementById("totalQty").innerText = totalUnits.toLocaleString();
+
+                renderCharts(combinedData, catMap);
+            } catch (e) {
+                console.error("Dashboard Error:", e);
+                // แสดงข้อความเตือนแบบไทยเมื่อข้อมูลไม่โหลด
+                document.querySelectorAll('.stat-value').forEach(el => el.innerText = "ERR");
+            }
+        }
+
+        function renderCharts(data, catMap) {
+            const low = data.filter(i => i.Total <= 5).length;
+            const med = data.filter(i => i.Total > 5 && i.Total <= 20).length;
+            const good = data.filter(i => i.Total > 20).length;
+
+            Chart.defaults.font.family = "'Chakra Petch', sans-serif";
+
+            if(statusChartObj) statusChartObj.destroy();
+            statusChartObj = new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['สินค้าใกล้หมด', 'สต็อกปกติ', 'สินค้าพร้อมส่ง'],
+                    datasets: [{ 
+                        data: [low, med, good], 
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'], 
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 20 } } } 
+                }
+            });
+
+            const topCats = Object.entries(catMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            if(categoryChartObj) categoryChartObj.destroy();
+            categoryChartObj = new Chart(document.getElementById('categoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: topCats.map(x => x[0]),
+                    datasets: [{ 
+                        label: 'จำนวนรวม (ชิ้น)', 
+                        data: topCats.map(x => x[1]), 
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        hoverBackgroundColor: '#3b82f6',
+                        borderRadius: 12 
+                    }]
+                },
+                options: { 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                        x: { ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        window.onload = loadDashboard;
+    </script>
+</body>
+</html>

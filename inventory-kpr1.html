@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory KP_R1 | KP System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
+        :root { --primary: #f97316; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.7); --border: rgba(255, 255, 255, 0.1); }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: white; 
+            font-family: 'Chakra Petch', sans-serif; 
+            padding-top: 120px; 
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .warehouse-scene { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; background: #020617; }
+        .warehouse-img { 
+            width: 100%; height: 100%; object-fit: cover; filter: brightness(0.15); 
+            background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070'); 
+            background-size: cover; background-position: center; 
+        }
+
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 100px; z-index: 1000; display: flex; justify-content: center; align-items: center; background: rgba(2, 6, 23, 0.3) !important; border-bottom: 1px solid var(--border); backdrop-filter: blur(15px); }
+        .nav-container { display: flex; gap: 10px; background: rgba(15, 23, 42, 0.5); padding: 8px; border-radius: 30px; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .nav-link { padding: 12px 24px; border-radius: 22px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; transition: 0.3s; color: rgba(255, 255, 255, 0.6); text-decoration: none; }
+        .nav-link:hover { color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: #020617; box-shadow: 0 0 25px rgba(249, 115, 22, 0.4); }
+
+        .glass-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(15px); border-radius: 1.5rem; }
+        .stat-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+        .stat-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.05); }
+
+        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; border: 1px solid currentColor; display: inline-block; text-transform: uppercase;}
+        .ready { color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; }
+        .img-container { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .tool-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        #transactionModal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 20px; }
+        .input-field { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 100%; color: white; outline: none; }
+        .input-field:focus { border-color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+    .then(() => console.log("Service Worker Registered"));
+    }
+    </script>
+    
+<link rel="manifest" href="manifest.json">
+
+    <div class="warehouse-scene"><div class="warehouse-img"></div></div>
+
+    <div id="transactionModal">
+        <div class="glass-card w-full max-w-lg p-8 border-orange-500/30 border shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 class="text-3xl font-bold text-white mb-6 uppercase tracking-tighter">Tool <span class="text-orange-500">Transaction</span></h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">1. ชื่อผู้ยืม/คืน</label>
+                    <select id="opName" class="input-field text-lg font-bold">
+                        <option value="" disabled selected>-- เลือกชื่อพนักงาน --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">2. รายการอุปกรณ์</label>
+                    <input type="text" id="selectedToolDisplay" list="toolList" class="input-field text-lg" placeholder="พิมพ์เพื่อค้นหา..." oninput="syncMatCode(this.value)">
+                    <datalist id="toolList"></datalist>
+                    <p id="selectedMatCode" class="text-xs text-orange-400 mt-1 font-mono font-bold"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">3. จำนวน (PCS)</label>
+                        <input type="number" id="transQty" value="1" min="1" class="input-field text-center text-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">ประเภท</label>
+                        <select id="transType" class="input-field font-bold">
+                            <option value="OUT">ยืมออก (Borrow)</option>
+                            <option value="IN">คืนของ (Return)</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="submitData()" id="submitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-slate-900 font-black py-4 rounded-xl text-lg transition">
+                    บันทึกรายการ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> <span>Home</span></a>
+            <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span>Overview</span></a>
+            <a href="inventory-select.html" class="nav-link active"><i class="fa-solid fa-boxes-stacked"></i> <span>Stock</span></a>
+            <a href="#" onclick="handleLogout()" class="nav-link text-red-500"><i class="fa-solid fa-power-off"></i></a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+            <div>
+                <a href="inventory-select.html" class="inline-flex items-center gap-2 text-orange-500 mb-4 hover:opacity-70 transition font-bold text-sm uppercase">
+                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ
+                </a>
+                <h1 class="text-5xl font-bold uppercase tracking-tighter">Inventory <span class="text-orange-500">KP_R1</span></h1>
+                <p class="text-[10px] text-slate-400 tracking-[0.3em] font-bold mt-2 uppercase">TOOL CONTROL SYSTEM | R1-STORE</p>
+            </div>
+            <div class="relative flex-1 md:w-96">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-orange-500"></i>
+                <input type="text" id="searchInput" onkeyup="filterData()" placeholder="ค้นหาด้วย Mat.Code หรือชื่อ..." 
+                       class="w-full bg-slate-900/60 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white outline-none focus:border-orange-500 shadow-xl backdrop-blur-md">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="stat-card glass-card p-8 border-l-4 border-l-emerald-500">
+                <h3 class="text-white text-lg font-bold mb-1">จำนวนรายการทั้งหมด</h3>
+                <p id="countItems" class="text-6xl font-black text-emerald-500 leading-none my-2 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">0</p>
+                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total SKU Items</p>
+            </div>
+            <div class="stat-card glass-card p-8 border-l-4 border-l-blue-500">
+                <h3 class="text-blue-400 text-lg font-bold mb-1">หมวดหมู่ทั้งหมด</h3>
+                <p id="countCats" class="text-6xl font-black text-blue-400 leading-none my-2 drop-shadow-[0_0_12px_rgba(59,130,246,0.3)]">0</p>
+                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total Categories</p>
+            </div>
+            <div class="stat-card glass-card p-8 border-l-4 border-l-white">
+                <h3 class="text-white text-lg font-bold mb-1">จำนวนชิ้นรวม</h3>
+                <p id="countUnits" class="text-6xl font-black text-white leading-none my-2 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</p>
+                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total Units in Stock</p>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto" style="max-height: 55vh;">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-[#0f172a] z-10 border-b border-white/10">
+                        <tr class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+                            <th class="p-5 w-24 text-center">Image</th>
+                            <th class="p-5">Operation</th>
+                            <th class="p-5">Mat.Code</th>
+                            <th class="p-5">Description</th>
+                            <th class="p-5 text-center">Status</th>
+                            <th class="p-5 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-white/[0.03]"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 2. ตั้งค่า Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqlBzXhKiGtOGx4fzKcul2gMKoJTEs968",
+            authDomain: "kp-inventory-system.firebaseapp.com",
+            databaseURL: "https://kp-inventory-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kp-inventory-system",
+            storageBucket: "kp-inventory-system.firebasestorage.app",
+            messagingSenderId: "776715886830",
+            appId: "1:776715886830:web:7e6fd0bb788113a00353ff"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
+        function handleLogout() { sessionStorage.clear(); window.location.href = "login.html"; }
+
+        const sheetID = "16fddak8yZOlNFq_8nLWm7g9Fzf8iJ8KwK3TYNI9hUqk";
+        const sourceSheetName = "Tool Store"; 
+        const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sourceSheetName)}`;
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwvjDlZFf6WV2oz-uSlsiUnavApkQBgCjxmMV4yeu31wo0UVPFeHmux6abK_wEOHcnUTaaO/exec";
+        const targetSheetName = "Transactions_StoreKP_R1"; 
+
+        const staffList = ["ADMIN", "นายอาณัติ กิตติขจร", "นายอภิชาติ พูลทอง", "นายสมควร สายเส็ง", "นายสิงห์ ร่วมรส", "นายอดิศักดิ์ เพชรนิล", "นายสมเจตน์ ไม้หอม", "นายคมสรรค์ ศรียา", "นายฉันทพล อินทสิทธิ์", "นายปริญญา สุบิน", "นายวุฒิพงษ์ เพ็ชรพราย", "นายธีรภัทร พิลึก", "นายวงศกร ระวังภัย", "นายจาตุพร ขุนพิลึก", "นายอนิรุธ เกิด"];
+
+        let rawData = [];
+        let currentItem = null;
+
+        function setupOperatorDropdown() {
+            const opSelect = document.getElementById("opName");
+            staffList.forEach(name => {
+                let opt = document.createElement("option");
+                opt.value = name; opt.textContent = name;
+                opSelect.appendChild(opt);
+            });
+            const currentLogon = sessionStorage.getItem("userName");
+            if (currentLogon) opSelect.value = currentLogon;
+        }
+
+        async function loadData(){
+            const table = document.getElementById("tableBody");
+            table.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-slate-500 italic font-bold">⚡ กำลังโหลดข้อมูล...</td></tr>`;
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const rows = json.table.rows;
+
+                rawData = rows.map((r, index) => {
+                    if (!r.c) return null;
+                    return {
+                        id: index,
+                        operation: r.c[0] ? r.c[0].v : "-",     
+                        matCode: r.c[4] ? r.c[4].v : "-",       
+                        description: r.c[5] ? r.c[5].v : "-",   
+                        material: r.c[6] ? r.c[6].v : "-",
+                        photo: r.c[7] ? r.c[7].v : ""
+                    };
+                }).filter(item => item !== null && item.matCode !== "-" && item.matCode !== "Mat.Code" && !String(item.matCode).includes("KP"));
+                
+                document.getElementById("toolList").innerHTML = rawData.map(item => `<option value="${item.description}">`).join('');
+                updateStats(rawData);
+                filterData();
+            } catch(error) { 
+                table.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-red-500 font-bold">❌ ไม่สามารถเชื่อมต่อข้อมูลได้</td></tr>`; 
+            }
+        }
+
+        function filterData(){
+            const table = document.getElementById("tableBody");
+            const search = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = rawData.filter(item => 
+                String(item.matCode).toLowerCase().includes(search) ||
+                String(item.description).toLowerCase().includes(search) ||
+                String(item.operation).toLowerCase().includes(search)
+            );
+
+            let rowsHtml = "";
+            filtered.forEach((item) => {
+                const imageHtml = (item.photo && item.photo.includes('http')) 
+                    ? `<img src="${item.photo}" class="tool-img" onerror="this.src='https://placehold.co/100x100/1e293b/orange?text=No+Img'">`
+                    : `<i class="fa-solid fa-wrench text-xs opacity-40"></i>`;
+
+                rowsHtml += `<tr class="hover:bg-white/[0.02] transition">
+                    <td class="p-4 text-center"><div class="img-container">${imageHtml}</div></td>
+                    <td class="p-4 text-xs text-slate-300 font-bold">${item.operation}</td>
+                    <td class="p-4 font-bold text-orange-500 font-mono text-sm">${item.matCode}</td>
+                    <td class="p-4 text-[11px] text-slate-100 max-w-xs">${item.description}</td>
+                    <td class="p-4 text-center"><span class="status-badge ready">READY</span></td>
+                    <td class="p-4 text-center">
+                        <button onclick="openModalById(${item.id})" class="bg-orange-500 hover:bg-orange-600 text-slate-900 px-4 py-2 rounded-lg font-bold text-[10px] transition shadow-lg">ยืม / คืน</button>
+                    </td>
+                </tr>`;
+            });
+            table.innerHTML = rowsHtml || `<tr><td colspan="6" class="p-20 text-center text-slate-600 italic">ไม่พบข้อมูล</td></tr>`;
+        }
+
+        function updateStats(data) {
+            document.getElementById("countItems").innerText = data.length.toLocaleString();
+            document.getElementById("countUnits").innerText = data.length.toLocaleString();
+            document.getElementById("countCats").innerText = [...new Set(data.map(item => item.operation))].length.toLocaleString();
+        }
+
+        function openModalById(id) {
+            currentItem = rawData.find(item => item.id === id);
+            if(currentItem) {
+                document.getElementById("selectedToolDisplay").value = currentItem.description;
+                document.getElementById("selectedMatCode").innerText = "CODE: " + currentItem.matCode;
+                document.getElementById("transactionModal").style.display = "flex";
+            }
+        }
+
+        function syncMatCode(val) {
+            const match = rawData.find(item => item.description === val);
+            document.getElementById("selectedMatCode").innerText = match ? "CODE: " + match.matCode : "--- ไม่พบข้อมูล ---";
+        }
+
+        function closeModal() { document.getElementById("transactionModal").style.display = "none"; }
+
+        // 3. ฟังก์ชันส่งข้อมูล (ปรับปรุงให้ส่ง Firebase ด้วย)
+        async function submitData() {
+            const opName = document.getElementById("opName").value;
+            const toolName = document.getElementById("selectedToolDisplay").value;
+            const matCode = document.getElementById("selectedMatCode").innerText.replace("CODE: ", "");
+            const qty = document.getElementById("transQty").value;
+            const type = document.getElementById("transType").value;
+            const btn = document.getElementById("submitBtn");
+
+            if(!opName || !toolName || matCode.includes("---")) { alert("⚠️ ข้อมูลไม่ครบ!"); return; }
+            btn.disabled = true; btn.innerText = "กำลังบันทึก...";
+
+            // ข้อมูลสำหรับบันทึก
+            const payload = {
+                opName,
+                toolName,
+                matCode,
+                qty,
+                type,
+                timestamp: new Date().toISOString(),
+                store: "KP_R1"
+            };
+
+            try {
+                // 3.1 บันทึกลง Firebase (ส่งไปที่โฟลเดอร์ all_transactions)
+                await db.ref('all_transactions').push(payload);
+
+                // 3.2 บันทึกลง Google Sheets (ตามเดิม)
+                await fetch(scriptURL, {
+                    method: 'POST', mode: 'no-cors',
+                    body: JSON.stringify({ ...payload, sheetName: targetSheetName })
+                });
+
+                alert(`✅ บันทึกรายการสำเร็จ!`); 
+                closeModal();
+            } catch (e) { 
+                console.error(e);
+                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ"); 
+            }
+            finally { btn.disabled = false; btn.innerText = "บันทึกรายการ"; }
+        }
+
+        window.onload = () => { loadData(); setupOperatorDropdown(); };
+    </script>
+</body>
+</html>

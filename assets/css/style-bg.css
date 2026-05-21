@@ -1,0 +1,45 @@
+/* Warehouse Animation Background */
+.warehouse-scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1; /* อยู่หลังเนื้อหาเสมอ */
+    overflow: hidden;
+    background: #020617; /* สีกันตายตอนภาพยังไม่โหลด */
+}
+
+.warehouse-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.4) contrast(1.2); /* ปรับให้มืดลงเพื่อให้ตัวหนังสืออ่านง่าย */
+    animation: zoomForward 12s infinite linear, footstepBob 0.8s infinite ease-in-out;
+    transform-origin: center center;
+}
+
+/* เอฟเฟกต์มืดรอบๆ (Vignette) ให้ดูมีมิติ */
+.vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 20%, rgba(2, 6, 23, 0.8) 100%);
+    pointer-events: none;
+}
+
+/* Animation: ซูมเข้าไปข้างหน้าลึกๆ */
+@keyframes zoomForward {
+    0% { transform: scale(1.0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Animation: จำลองการก้าวเดิน (ขยับขึ้นลงเบาๆ) */
+@keyframes footstepBob {
+    0%, 100% { margin-top: 0; }
+    50% { margin-top: -5px; }
+}

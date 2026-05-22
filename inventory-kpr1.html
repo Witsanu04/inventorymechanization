@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory KP_R1 | KP System</title>
+    <title>Inventory Detail System | KP_R1 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -12,158 +12,198 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
-        :root { --primary: #f97316; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.7); --border: rgba(255, 255, 255, 0.1); }
         
         body { 
-            background: var(--bg-dark); 
-            color: white; 
+            background: #f8fafc; 
+            color: #1e293b; 
             font-family: 'Chakra Petch', sans-serif; 
-            padding-top: 120px; 
-            min-height: 100vh;
-            margin: 0;
+            padding-top: 110px; 
         }
 
-        .warehouse-scene { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; background: #020617; }
-        .warehouse-img { 
-            width: 100%; height: 100%; object-fit: cover; filter: brightness(0.15); 
-            background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070'); 
-            background-size: cover; background-position: center; 
+        /* ปุ่ม Back ซ้ายมือบน */
+        .back-btn {
+            position: fixed; top: 22px; left: 20px;
+            width: 45px; height: 45px; background: white;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            z-index: 2100; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9; transition: 0.3s;
         }
 
-        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 100px; z-index: 1000; display: flex; justify-content: center; align-items: center; background: rgba(2, 6, 23, 0.3) !important; border-bottom: 1px solid var(--border); backdrop-filter: blur(15px); }
-        .nav-container { display: flex; gap: 10px; background: rgba(15, 23, 42, 0.5); padding: 8px; border-radius: 30px; border: 1px solid rgba(249, 115, 22, 0.2); }
-        .nav-link { padding: 12px 24px; border-radius: 22px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; transition: 0.3s; color: rgba(255, 255, 255, 0.6); text-decoration: none; }
-        .nav-link:hover { color: var(--primary); }
-        .nav-link.active { background: var(--primary); color: #020617; box-shadow: 0 0 25px rgba(249, 115, 22, 0.4); }
+        /* แถบเมนูบนสไตล์ใหม่ */
+        .top-nav-bar {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            background: white; height: 60px; padding: 0 8px; border-radius: 18px;
+            display: flex; align-items: center; gap: 5px;
+            z-index: 2000; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            width: fit-content; min-width: 480px; border: 1px solid #f1f5f9;
+        }
 
-        .glass-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(15px); border-radius: 1.5rem; }
-        .stat-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
-        .stat-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.05); }
+        .nav-item {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; color: #64748b; text-decoration: none; font-weight: 500;
+            padding: 10px 18px; border-radius: 12px; transition: 0.3s; font-size: 14px;
+        }
 
-        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; border: 1px solid currentColor; display: inline-block; text-transform: uppercase;}
-        .ready { color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; }
-        .img-container { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-        .tool-img { width: 100%; height: 100%; object-fit: cover; }
-        
-        #transactionModal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 20px; }
-        .input-field { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 100%; color: white; outline: none; }
-        .input-field:focus { border-color: var(--primary); }
+        .nav-item.active { 
+            background: #22c55e; 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        }
+
+        .nav-divider { width: 1px; height: 24px; background: #e2e8f0; margin: 0 5px; }
+
+        .logout-btn {
+            color: #ef4444; width: 40px; height: 40px; 
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; transition: 0.3s;
+        }
+        .logout-btn:hover { background: #fee2e2; }
+
+        /* Card ดีไซน์ */
+        .dash-card {
+            background: white; border-radius: 16px; padding: 12px 20px;
+            display: flex; align-items: center; gap: 12px; border: 1px solid #f1f5f9;
+        }
+
+        .tool-card {
+            background: white; border-radius: 20px; border: 1px solid #f1f5f9;
+            overflow: hidden; cursor: pointer; transition: 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            height: 100%;
+        }
+        .tool-card:hover { transform: translateY(-5px); border-color: #22c55e; box-shadow: 0 12px 20px -5px rgba(0,0,0,0.05); }
+
+        #itemModal {
+            display: none; position: fixed; inset: 0; z-index: 3000;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(6px);
+            align-items: center; justify-content: center; padding: 15px;
+        }
+        .modal-body {
+            background: white; border-radius: 28px; width: 100%; max-width: 550px;
+            max-height: 90vh; overflow-y: auto;
+        }
+
+        .form-input {
+            width: 100%; border: 2px solid #f1f5f9; border-radius: 12px;
+            padding: 12px; outline: none; background: #f8fafc; transition: 0.2s;
+        }
+        .form-input:focus { border-color: #22c55e; background: white; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+        .error-shake { animation: shake 0.5s; }
     </style>
 </head>
 <body>
 
-    <script>
-    if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-    .then(() => console.log("Service Worker Registered"));
-    }
-    </script>
-    
-<link rel="manifest" href="manifest.json">
+    <a href="javascript:history.back()" class="back-btn">
+        <i class="fa-solid fa-chevron-left text-slate-500 text-lg"></i>
+    </a>
 
-    <div class="warehouse-scene"><div class="warehouse-img"></div></div>
+    <nav class="top-nav-bar">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i> <span>หน้าแรก</span>
+        </a>
+        <a href="dashboard.html" class="nav-item">
+            <i class="fa-solid fa-chart-line"></i> <span>สรุปข้อมูล</span>
+        </a>
+        <a href="time.html" class="nav-item">
+            <i class="fa-solid fa-user-clock"></i> <span>บันทึกเวลา</span>
+        </a>
+        <a href="#" class="nav-item active">
+            <i class="fa-solid fa-boxes-stacked"></i> <span>จัดการสต็อก</span>
+        </a>
+        <div class="nav-divider"></div>
+        <a href="#" onclick="handleLogout()" class="logout-btn">
+            <i class="fa-solid fa-power-off"></i>
+        </a>
+    </nav>
 
-    <div id="transactionModal">
-        <div class="glass-card w-full max-w-lg p-8 border-orange-500/30 border shadow-2xl relative">
-            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
-            <h2 class="text-3xl font-bold text-white mb-6 uppercase tracking-tighter">Tool <span class="text-orange-500">Transaction</span></h2>
-            <div class="space-y-5">
-                <div>
-                    <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">1. ชื่อผู้ยืม/คืน</label>
-                    <select id="opName" class="input-field text-lg font-bold">
-                        <option value="" disabled selected>-- เลือกชื่อพนักงาน --</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">2. รายการอุปกรณ์</label>
-                    <input type="text" id="selectedToolDisplay" list="toolList" class="input-field text-lg" placeholder="พิมพ์เพื่อค้นหา..." oninput="syncMatCode(this.value)">
-                    <datalist id="toolList"></datalist>
-                    <p id="selectedMatCode" class="text-xs text-orange-400 mt-1 font-mono font-bold"></p>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-col lg:flex-row justify-between items-center gap-4 mb-8">
+            <div class="relative w-full max-w-lg">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                <input type="text" id="searchInput" placeholder="สแกน MatCode หรือ ค้นหาชื่ออุปกรณ์..." 
+                       class="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-6 outline-none focus:border-green-500 shadow-sm transition-all text-lg">
+            </div>
+
+            <div class="flex gap-3 w-full lg:w-auto">
+                <div class="dash-card flex-1 shadow-sm border-l-4 border-l-green-500">
                     <div>
-                        <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">3. จำนวน (PCS)</label>
-                        <input type="number" id="transQty" value="1" min="1" class="input-field text-center text-xl font-bold">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1 block">ประเภท</label>
-                        <select id="transType" class="input-field font-bold">
-                            <option value="OUT">ยืมออก (Borrow)</option>
-                            <option value="IN">คืนของ (Return)</option>
-                        </select>
+                        <p id="countItems" class="text-xl font-black text-slate-800 leading-none">0</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Total Items in Store</p>
                     </div>
                 </div>
-                <button onclick="submitData()" id="submitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-slate-900 font-black py-4 rounded-xl text-lg transition">
-                    บันทึกรายการ
+            </div>
+        </div>
+
+        <div id="cardsContainer" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12"></div>
+    </div>
+
+    <div id="itemModal">
+        <div class="modal-body shadow-2xl overflow-hidden">
+            <div class="h-60 bg-slate-100 relative">
+                <img id="mImg" class="w-full h-full object-contain p-4">
+                <button onclick="closeModal()" class="absolute top-5 right-5 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-times"></i>
                 </button>
+            </div>
+
+            <div class="p-8">
+                <div class="mb-6 border-b border-slate-50 pb-6">
+                    <p id="mTag" class="text-green-600 font-black font-mono text-xs mb-1 uppercase"></p>
+                    <h3 id="mTitle" class="text-2xl font-black text-slate-800 leading-tight"></h3>
+                    <div class="flex gap-4 mt-5">
+                        <div class="bg-slate-50 px-4 py-2 rounded-xl flex-1">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Category</p>
+                            <p id="mCat" class="font-bold text-slate-700"></p>
+                        </div>
+                        <div class="bg-green-50 px-4 py-2 rounded-xl flex-1">
+                            <p class="text-[10px] text-green-500 uppercase font-bold">Status</p>
+                            <p class="font-bold text-green-700 text-lg">พร้อมใช้งาน</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">พนักงาน</label>
+                                <select id="opName" class="form-input font-bold" onchange="hideError()"></select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">รหัสผ่าน</label>
+                                <input type="password" id="empPassword" class="form-input" placeholder="••••" oninput="hideError()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">จำนวน</label>
+                                <input type="number" id="transQty" value="1" min="1" class="form-input text-center font-black text-lg">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">ประเภทรายการ</label>
+                                <select id="transType" class="form-input font-bold text-green-600">
+                                    <option value="OUT">(-) เบิกอุปกรณ์</option>
+                                    <option value="IN">(+) คืนอุปกรณ์</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="modalError" class="hidden text-center text-red-500 font-bold text-xs bg-red-50 py-3 rounded-xl error-shake">
+                            ❌ ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง
+                        </div>
+                        <button onclick="submitData()" id="submitBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-2xl text-lg mt-2 shadow-lg shadow-green-200 transition-all active:scale-95">
+                            ยืนยันบันทึกข้อมูล
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <nav class="top-nav">
-        <div class="nav-container">
-            <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> <span>Home</span></a>
-            <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span>Overview</span></a>
-            <a href="inventory-select.html" class="nav-link active"><i class="fa-solid fa-boxes-stacked"></i> <span>Stock</span></a>
-            <a href="#" onclick="handleLogout()" class="nav-link text-red-500"><i class="fa-solid fa-power-off"></i></a>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto p-4 md:p-8">
-        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
-            <div>
-                <a href="inventory-select.html" class="inline-flex items-center gap-2 text-orange-500 mb-4 hover:opacity-70 transition font-bold text-sm uppercase">
-                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ
-                </a>
-                <h1 class="text-5xl font-bold uppercase tracking-tighter">Inventory <span class="text-orange-500">KP_R1</span></h1>
-                <p class="text-[10px] text-slate-400 tracking-[0.3em] font-bold mt-2 uppercase">TOOL CONTROL SYSTEM | R1-STORE</p>
-            </div>
-            <div class="relative flex-1 md:w-96">
-                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-orange-500"></i>
-                <input type="text" id="searchInput" onkeyup="filterData()" placeholder="ค้นหาด้วย Mat.Code หรือชื่อ..." 
-                       class="w-full bg-slate-900/60 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white outline-none focus:border-orange-500 shadow-xl backdrop-blur-md">
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="stat-card glass-card p-8 border-l-4 border-l-emerald-500">
-                <h3 class="text-white text-lg font-bold mb-1">จำนวนรายการทั้งหมด</h3>
-                <p id="countItems" class="text-6xl font-black text-emerald-500 leading-none my-2 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">0</p>
-                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total SKU Items</p>
-            </div>
-            <div class="stat-card glass-card p-8 border-l-4 border-l-blue-500">
-                <h3 class="text-blue-400 text-lg font-bold mb-1">หมวดหมู่ทั้งหมด</h3>
-                <p id="countCats" class="text-6xl font-black text-blue-400 leading-none my-2 drop-shadow-[0_0_12px_rgba(59,130,246,0.3)]">0</p>
-                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total Categories</p>
-            </div>
-            <div class="stat-card glass-card p-8 border-l-4 border-l-white">
-                <h3 class="text-white text-lg font-bold mb-1">จำนวนชิ้นรวม</h3>
-                <p id="countUnits" class="text-6xl font-black text-white leading-none my-2 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</p>
-                <p class="text-[11px] text-slate-500 uppercase font-bold italic tracking-wider">Total Units in Stock</p>
-            </div>
-        </div>
-
-        <div class="glass-card overflow-hidden shadow-2xl">
-            <div class="overflow-x-auto" style="max-height: 55vh;">
-                <table class="w-full text-left border-collapse">
-                    <thead class="sticky top-0 bg-[#0f172a] z-10 border-b border-white/10">
-                        <tr class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-                            <th class="p-5 w-24 text-center">Image</th>
-                            <th class="p-5">Operation</th>
-                            <th class="p-5">Mat.Code</th>
-                            <th class="p-5">Description</th>
-                            <th class="p-5 text-center">Status</th>
-                            <th class="p-5 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-white/[0.03]"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
     <script>
-        // 2. ตั้งค่า Firebase Configuration
+        // ระบบจำลอง Password (อ้างอิงจากตัวอย่าง)
+        const staffPassDB = { "ADMIN": "1234", "นายอาณัติ กิตติขจร": "1111", "นายอภิชาติ พูลทอง": "2222", "นายสมควร สายเส็ง": "3333" };
+
         const firebaseConfig = {
             apiKey: "AIzaSyBqlBzXhKiGtOGx4fzKcul2gMKoJTEs968",
             authDomain: "kp-inventory-system.firebaseapp.com",
@@ -176,154 +216,147 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
-        function handleLogout() { sessionStorage.clear(); window.location.href = "login.html"; }
-
         const sheetID = "16fddak8yZOlNFq_8nLWm7g9Fzf8iJ8KwK3TYNI9hUqk";
         const sourceSheetName = "Tool Store"; 
         const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sourceSheetName)}`;
         const scriptURL = "https://script.google.com/macros/s/AKfycbwvjDlZFf6WV2oz-uSlsiUnavApkQBgCjxmMV4yeu31wo0UVPFeHmux6abK_wEOHcnUTaaO/exec";
-        const targetSheetName = "Transactions_StoreKP_R1"; 
-
-        const staffList = ["ADMIN", "นายอาณัติ กิตติขจร", "นายอภิชาติ พูลทอง", "นายสมควร สายเส็ง", "นายสิงห์ ร่วมรส", "นายอดิศักดิ์ เพชรนิล", "นายสมเจตน์ ไม้หอม", "นายคมสรรค์ ศรียา", "นายฉันทพล อินทสิทธิ์", "นายปริญญา สุบิน", "นายวุฒิพงษ์ เพ็ชรพราย", "นายธีรภัทร พิลึก", "นายวงศกร ระวังภัย", "นายจาตุพร ขุนพิลึก", "นายอนิรุธ เกิด"];
 
         let rawData = [];
-        let currentItem = null;
+        const staffList = ["ADMIN", "นายอาณัติ กิตติขจร", "นายอภิชาติ พูลทอง", "นายสมควร สายเส็ง", "นายสิงห์ ร่วมรส", "นายอดิศักดิ์ เพชรนิล", "นายสมเจตน์ ไม้หอม", "นายคมสรรค์ ศรียา", "นายฉันทพล อินทสิทธิ์", "นายปริญญา สุบิน", "นายวุฒิพงษ์ เพ็ชรพราย", "นายธีรภัทร พิลึก", "นายวงศกร ระวังภัย", "นายจาตุพร ขุนพิลึก", "นายอนิรุธ เกิด"];
 
-        function setupOperatorDropdown() {
-            const opSelect = document.getElementById("opName");
-            staffList.forEach(name => {
-                let opt = document.createElement("option");
-                opt.value = name; opt.textContent = name;
-                opSelect.appendChild(opt);
-            });
-            const currentLogon = sessionStorage.getItem("userName");
-            if (currentLogon) opSelect.value = currentLogon;
-        }
-
-        async function loadData(){
-            const table = document.getElementById("tableBody");
-            table.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-slate-500 italic font-bold">⚡ กำลังโหลดข้อมูล...</td></tr>`;
+        async function loadData() {
             try {
                 const response = await fetch(url);
                 const text = await response.text();
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 const rows = json.table.rows;
 
-                rawData = rows.map((r, index) => {
-                    if (!r.c) return null;
-                    return {
-                        id: index,
-                        operation: r.c[0] ? r.c[0].v : "-",     
-                        matCode: r.c[4] ? r.c[4].v : "-",       
-                        description: r.c[5] ? r.c[5].v : "-",   
-                        material: r.c[6] ? r.c[6].v : "-",
-                        photo: r.c[7] ? r.c[7].v : ""
-                    };
-                }).filter(item => item !== null && item.matCode !== "-" && item.matCode !== "Mat.Code" && !String(item.matCode).includes("KP"));
+                rawData = rows.map((r, index) => ({
+                    id: index,
+                    category: r.c[0]?.v || "-",
+                    matCode: r.c[4]?.v || "-",
+                    name: r.c[5]?.v || "-",
+                    photo: r.c[7]?.v || ""
+                })).filter(item => item.matCode !== "-" && !String(item.matCode).includes("Mat.Code"));
                 
-                document.getElementById("toolList").innerHTML = rawData.map(item => `<option value="${item.description}">`).join('');
-                updateStats(rawData);
-                filterData();
-            } catch(error) { 
-                table.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-red-500 font-bold">❌ ไม่สามารถเชื่อมต่อข้อมูลได้</td></tr>`; 
-            }
+                document.getElementById("countItems").innerText = rawData.length;
+                renderCards(rawData);
+            } catch(e) { console.error("Load Error", e); }
         }
 
-        function filterData(){
-            const table = document.getElementById("tableBody");
-            const search = document.getElementById("searchInput").value.toLowerCase();
+        function renderCards(data) {
+            const container = document.getElementById("cardsContainer");
+            container.innerHTML = data.map(item => `
+                <div class="tool-card" onclick="openModal(${item.id})">
+                    <div class="h-44 bg-slate-50 overflow-hidden relative flex items-center justify-center p-4">
+                        <img src="${item.photo || 'https://placehold.co/400x400?text=No+Image'}" class="max-w-full max-h-full object-contain" onerror="this.src='https://via.placeholder.com/300x200?text=No+Photo'">
+                    </div>
+                    <div class="p-4">
+                        <p class="text-[10px] font-black text-green-600 mb-1">#${item.matCode}</p>
+                        <h3 class="text-sm font-bold text-slate-800 line-clamp-2 h-10 leading-snug">${item.name}</h3>
+                        <div class="mt-3 flex items-center justify-between pt-3 border-t border-slate-50">
+                             <span class="text-[10px] font-bold text-slate-400 uppercase">${item.category}</span>
+                             <span class="text-green-500 text-[10px] font-bold">รายละเอียด <i class="fa-solid fa-chevron-right ml-1"></i></span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            const val = e.target.value.toLowerCase();
             const filtered = rawData.filter(item => 
-                String(item.matCode).toLowerCase().includes(search) ||
-                String(item.description).toLowerCase().includes(search) ||
-                String(item.operation).toLowerCase().includes(search)
+                item.name.toLowerCase().includes(val) || 
+                String(item.matCode).toLowerCase().includes(val)
             );
+            renderCards(filtered);
+        });
 
-            let rowsHtml = "";
-            filtered.forEach((item) => {
-                const imageHtml = (item.photo && item.photo.includes('http')) 
-                    ? `<img src="${item.photo}" class="tool-img" onerror="this.src='https://placehold.co/100x100/1e293b/orange?text=No+Img'">`
-                    : `<i class="fa-solid fa-wrench text-xs opacity-40"></i>`;
-
-                rowsHtml += `<tr class="hover:bg-white/[0.02] transition">
-                    <td class="p-4 text-center"><div class="img-container">${imageHtml}</div></td>
-                    <td class="p-4 text-xs text-slate-300 font-bold">${item.operation}</td>
-                    <td class="p-4 font-bold text-orange-500 font-mono text-sm">${item.matCode}</td>
-                    <td class="p-4 text-[11px] text-slate-100 max-w-xs">${item.description}</td>
-                    <td class="p-4 text-center"><span class="status-badge ready">READY</span></td>
-                    <td class="p-4 text-center">
-                        <button onclick="openModalById(${item.id})" class="bg-orange-500 hover:bg-orange-600 text-slate-900 px-4 py-2 rounded-lg font-bold text-[10px] transition shadow-lg">ยืม / คืน</button>
-                    </td>
-                </tr>`;
-            });
-            table.innerHTML = rowsHtml || `<tr><td colspan="6" class="p-20 text-center text-slate-600 italic">ไม่พบข้อมูล</td></tr>`;
+        let selectedTool = null;
+        function openModal(id) {
+            selectedTool = rawData.find(x => x.id === id);
+            if(!selectedTool) return;
+            
+            document.getElementById("mImg").src = selectedTool.photo || 'https://placehold.co/400x400?text=No+Image';
+            document.getElementById("mTag").innerText = "Material Code: " + selectedTool.matCode;
+            document.getElementById("mTitle").innerText = selectedTool.name;
+            document.getElementById("mCat").innerText = selectedTool.category;
+            
+            hideError();
+            document.getElementById("empPassword").value = "";
+            document.getElementById("itemModal").style.display = "flex";
         }
 
-        function updateStats(data) {
-            document.getElementById("countItems").innerText = data.length.toLocaleString();
-            document.getElementById("countUnits").innerText = data.length.toLocaleString();
-            document.getElementById("countCats").innerText = [...new Set(data.map(item => item.operation))].length.toLocaleString();
-        }
+        function closeModal() { document.getElementById("itemModal").style.display = "none"; }
+        function hideError() { document.getElementById("modalError").classList.add("hidden"); }
 
-        function openModalById(id) {
-            currentItem = rawData.find(item => item.id === id);
-            if(currentItem) {
-                document.getElementById("selectedToolDisplay").value = currentItem.description;
-                document.getElementById("selectedMatCode").innerText = "CODE: " + currentItem.matCode;
-                document.getElementById("transactionModal").style.display = "flex";
-            }
-        }
-
-        function syncMatCode(val) {
-            const match = rawData.find(item => item.description === val);
-            document.getElementById("selectedMatCode").innerText = match ? "CODE: " + match.matCode : "--- ไม่พบข้อมูล ---";
-        }
-
-        function closeModal() { document.getElementById("transactionModal").style.display = "none"; }
-
-        // 3. ฟังก์ชันส่งข้อมูล (ปรับปรุงให้ส่ง Firebase ด้วย)
         async function submitData() {
             const opName = document.getElementById("opName").value;
-            const toolName = document.getElementById("selectedToolDisplay").value;
-            const matCode = document.getElementById("selectedMatCode").innerText.replace("CODE: ", "");
+            const password = document.getElementById("empPassword").value;
             const qty = document.getElementById("transQty").value;
             const type = document.getElementById("transType").value;
+            const err = document.getElementById("modalError");
             const btn = document.getElementById("submitBtn");
 
-            if(!opName || !toolName || matCode.includes("---")) { alert("⚠️ ข้อมูลไม่ครบ!"); return; }
+            // ตรวจสอบรหัสผ่าน (ถ้ามีใน DB)
+            if(staffPassDB[opName] && staffPassDB[opName] !== password) {
+                err.innerText = "❌ รหัสผ่านพนักงานไม่ถูกต้อง!";
+                err.classList.remove("hidden");
+                err.classList.remove("error-shake"); void err.offsetWidth; err.classList.add("error-shake");
+                return;
+            }
+
+            if(!password) { 
+                err.innerText = "❌ กรุณากรอกรหัสผ่านเพื่อยืนยัน";
+                err.classList.remove("hidden");
+                return;
+            }
+            
             btn.disabled = true; btn.innerText = "กำลังบันทึก...";
 
-            // ข้อมูลสำหรับบันทึก
-            const payload = {
-                opName,
-                toolName,
-                matCode,
-                qty,
-                type,
-                timestamp: new Date().toISOString(),
-                store: "KP_R1"
+            const payload = { 
+                opName, 
+                toolName: selectedTool.name, 
+                matCode: selectedTool.matCode, 
+                qty, 
+                type, 
+                empId: password,
+                store: "KP_R1",
+                timestamp: new Date().toISOString() 
             };
 
             try {
-                // 3.1 บันทึกลง Firebase (ส่งไปที่โฟลเดอร์ all_transactions)
+                // บันทึกลง Firebase
                 await db.ref('all_transactions').push(payload);
-
-                // 3.2 บันทึกลง Google Sheets (ตามเดิม)
-                await fetch(scriptURL, {
-                    method: 'POST', mode: 'no-cors',
-                    body: JSON.stringify({ ...payload, sheetName: targetSheetName })
-                });
-
-                alert(`✅ บันทึกรายการสำเร็จ!`); 
+                // บันทึกลง Google Sheets
+                await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({...payload, sheetName: "Transactions_StoreKP_R1"}) });
+                
                 closeModal();
+                alert("✅ บันทึกข้อมูลสำเร็จ!");
             } catch (e) { 
-                console.error(e);
-                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ"); 
+                err.innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อ";
+                err.classList.remove("hidden");
+            } finally { 
+                btn.disabled = false; btn.innerText = "ยืนยันบันทึกข้อมูล"; 
             }
-            finally { btn.disabled = false; btn.innerText = "บันทึกรายการ"; }
         }
 
-        window.onload = () => { loadData(); setupOperatorDropdown(); };
+        function setupOperatorDropdown() {
+            const opSelect = document.getElementById("opName");
+            opSelect.innerHTML = '<option value="" disabled selected>เลือกรายชื่อ...</option>' + 
+                staffList.map(name => `<option value="${name}">${name}</option>`).join('');
+        }
+
+        function handleLogout() {
+            if(confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+                window.location.href = "login.html";
+            }
+        }
+
+        window.onload = () => {
+            loadData();
+            setupOperatorDropdown();
+        };
     </script>
 </body>
 </html>

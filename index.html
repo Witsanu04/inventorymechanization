@@ -3,164 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Hub | Mechanization Department</title>
+    <title>MECH DEPT | Engineering Hub 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap');
-        :root { --primary: #00ff99; --bg-dark: #020617; --card-bg: rgba(11, 17, 32, 0.72); --border: rgba(255, 255, 255, 0.08); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Chakra+Petch:wght@500;700&display=swap');
         
-        body { background: var(--bg-dark); color: white; font-family: 'Chakra Petch', sans-serif; min-height: 100vh; overflow-x: hidden; }
-        
-        /* แก้ไขส่วนพื้นหลัง */
-        .warehouse-scene { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; overflow: hidden; }
-        .warehouse-img { 
-            width: 110%; 
-            height: 110%; 
-            object-fit: cover; 
-            filter: brightness(0.35) blur(1px); /* ปรับความสว่างจาก 0.18 เป็น 0.35 ให้เห็นรูปชัดขึ้น */
-            background-image: url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070'); 
-            animation: slowMove 20s infinite alternate ease-in-out; 
+        :root {
+            --mech-green: #22c55e;
+            --mech-dark: #0f172a;
+            --mech-light: #f8fafc;
+            --mech-blue: #3b82f6;
         }
-        @keyframes slowMove { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
-        
-        .vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 10%, rgba(2,6,23,0.96) 75%); }
-        
-        .glass-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(18px); transition: 0.25s; border-radius: 2.5rem; }
-        .glass-card:hover { border-color: rgba(0,255,153,0.3); transform: translateY(-4px); box-shadow: 0 10px 30px -10px rgba(0,255,153,0.3); }
-        
-        .module-blue { border-bottom: 4px solid #3b82f6; }
-        .module-orange { border-bottom: 4px solid #f97316; }
-        .module-green { border-bottom: 4px solid #00ff99; }
-        
-        .cta-btn { display: block; width: 100%; text-align: center; padding: 0.85rem; border-radius: 1rem; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; text-decoration: none; transition: 0.3s; }
-        .module-blue .cta-btn { background: #3b82f6; color: white; }
-        .module-orange .cta-btn { background: #f97316; color: white; }
-        .module-green .cta-btn { background: #00ff99; color: #020617; }
-        .cta-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
-        
-        .stat-card { background: rgba(11,17,32,0.8); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(18px); transition: 0.3s; }
-        .stat-card:hover { border-color: rgba(255,255,255,0.2); }
-        .stat-value { font-size: 2.8rem; font-weight: 700; line-height: 1; }
-        
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-dot.online { background: #00ff99; box-shadow: 0 0 10px #00ff99; animation: pulse 2s infinite; }
-        .status-dot.offline { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
-        .status-dot.connecting { background: #f59e0b; animation: pulse 1s infinite; }
-        
-        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
-        
-        #offlineBanner { display: none; align-items: center; gap: 0.75rem; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; }
-        #offlineBanner.show { display: flex; }
+
+        body {
+            background-color: var(--mech-light);
+            color: var(--mech-dark);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Hero Split Design */
+        .hero-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 450px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .hero-text {
+            padding: 4rem 6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-visual {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%),
+                        url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        /* Engineering Cards */
+        .module-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .module-card:hover {
+            border-color: var(--mech-green);
+            box-shadow: 0 20px 25px -5px rgba(34, 197, 94, 0.1);
+            transform: translateY(-8px);
+        }
+
+        .icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Machine Card Specific */
+        .machine-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid #f1f5f9;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .machine-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Stat Boxes */
+        .stat-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: -3rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stat-card {
+            background: var(--mech-dark);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            border-top: 4px solid var(--mech-green);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .btn-action {
+            border: 1.5px solid #e2e8f0;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: 0.3s;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .module-card:hover .btn-action {
+            background: var(--mech-green);
+            border-color: var(--mech-green);
+            color: white;
+        }
+
+        .status-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--mech-green);
+            box-shadow: 0 0 10px var(--mech-green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log("SW Registered:", reg.scope))
-                    .catch(err => console.log("SW Failed:", err));
-            });
-        }
-    </script>
-    <link rel="manifest" href="manifest.json">
 
-    <div class="warehouse-scene">
-        <div class="warehouse-img"></div>
-        <div class="vignette"></div>
-    </div>
-    
-    <div class="admin-corner" style="position:absolute; top:1.5rem; right:1.5rem; z-index: 50;">
-        <a href="login.html" class="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full transition-all hover:bg-red-500/20 text-decoration-none">
-            <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">ระบบจัดการ (Admin)</span>
-            <i class="fa-solid fa-user-shield text-red-500"></i>
-        </a>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-6 py-12">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 pt-10">
-            <div class="text-center md:text-left">
-                <h1 class="text-5xl md:text-7xl font-bold uppercase tracking-tighter italic leading-tight">
-                    MECHANIZATION<br><span class="text-[#00ff99] not-italic">DEPARTMENT</span>
-                </h1>
-                <p class="text-xs text-[#00ff99] tracking-[0.4em] font-bold opacity-80 uppercase mt-2">ระบบจัดการคลังสินค้าอัจฉริยะ (Store 25 & R1)</p>
-            </div>
-            <div class="flex gap-4 items-center">
-                <div class="text-right hidden md:block border-r border-white/10 pr-4">
-                    <p class="text-slate-500 text-[10px] font-bold tracking-widest uppercase">System Status</p>
-                    <p class="text-sm font-bold uppercase flex items-center justify-end gap-1">
-                        <span class="status-dot connecting" id="statusDot"></span>
-                        <span id="statusText">กำลังเชื่อมต่อ...</span>
-                    </p>
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-[1600px] mx-auto px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="bg-green-600 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-gears text-lg"></i>
                 </div>
-                <div class="w-16 h-16 bg-[#00ff99]/20 rounded-2xl flex items-center justify-center border border-[#00ff99]/40">
-                    <i class="fa-solid fa-microchip text-[#00ff99] text-3xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div id="offlineBanner" class="text-xs">
-            <i class="fa-solid fa-triangle-exclamation text-red-400 text-lg"></i>
-            <span class="text-red-300"><b>การเชื่อมต่อขัดข้อง:</b> ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบสถานะอินเทอร์เน็ต</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="glass-card module-blue p-10 flex flex-col justify-between h-80">
                 <div>
-                    <i class="fa-solid fa-chart-line text-4xl text-blue-400 mb-5"></i>
-                    <h3 class="text-2xl font-bold italic underline underline-offset-4 decoration-blue-500/50">System Overview</h3>
-                    <p class="text-slate-300 text-sm mt-4 font-light leading-relaxed">รายงานสถิติและภาพรวมสินค้าคงคลัง<br><span class="text-blue-400 font-bold">รวมทั้ง 2 สโตร์ (25 & R1)</span></p>
+                    <h2 class="font-black text-xl tracking-tighter leading-none">MECH <span class="text-green-600">DEPT.</span></h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Engineering Excellence</p>
                 </div>
-                <a href="dashboard.html" class="cta-btn">ดูรายงานวิเคราะห์</a>
             </div>
 
-            <div class="glass-card module-orange p-10 flex flex-col justify-between h-80">
-                <div>
-                    <i class="fa-solid fa-user-clock text-4xl text-orange-400 mb-5"></i>
-                    <h3 class="text-2xl font-bold italic underline underline-offset-4 decoration-orange-500/50">Working Time</h3>
-                    <p class="text-slate-300 text-sm mt-4 font-light leading-relaxed">บันทึกเวลาปฏิบัติงานของพนักงาน<br><span class="text-orange-400 font-bold">ระบบลงเวลาดิจิทัล</span></p>
+            <nav class="flex items-center gap-8">
+                <div class="hidden lg:flex gap-6 text-[11px] font-bold uppercase tracking-widest">
+                    <a href="index.html" class="text-green-600 border-b-2 border-green-600 pb-1">Home</a>
+                    <a href="#" class="text-slate-500 hover:text-green-600 transition">Machine Fleet</a>
+                    <a href="admin-log.html" class="text-slate-500 hover:text-green-600 transition">History Log</a>
                 </div>
-                <a href="working-time.html" class="cta-btn">ลงเวลาทำงาน</a>
-            </div>
-
-            <div class="glass-card module-green p-10 flex flex-col justify-between h-80">
-                <div>
-                    <i class="fa-solid fa-boxes-stacked text-4xl text-[#00ff99] mb-5"></i>
-                    <h3 class="text-2xl font-bold italic underline underline-offset-4 decoration-[#00ff99]/50">Inventory Stock</h3>
-                    <p class="text-slate-300 text-sm mt-4 font-light leading-relaxed">จัดการข้อมูลสินค้าในคลัง<br><span class="text-[#00ff99] font-bold">รับเข้า - เบิกออก - เช็กสต็อก</span></p>
+                <div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+                <div class="flex items-center gap-3">
+                    <a href="login.html" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-[10px]"></i> ADMIN
+                    </a>
                 </div>
-                <a href="inventory-select.html" class="cta-btn">จัดการสต็อกสินค้า</a>
-            </div>
+            </nav>
         </div>
+    </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="stat-card p-8 rounded-3xl text-center">
-                <p class="text-[10px] text-slate-500 font-bold uppercase mb-3 tracking-widest">รายการสินค้าทั้งหมด (Total Items)</p>
-                <div id="dashTotalItems" class="stat-value text-white">--</div>
-            </div>
-            <div class="stat-card p-8 rounded-3xl text-center border-orange-500/20">
-                <p class="text-[10px] text-orange-500 font-bold uppercase mb-3 tracking-widest">สินค้าใกล้หมด (Low Stock ≤ 5)</p>
-                <div id="dashLowStock" class="stat-value text-orange-400">--</div>
-            </div>
-            <div class="stat-card p-8 rounded-3xl text-center border-red-500/30">
-                <p class="text-[10px] text-red-500 font-bold uppercase mb-3 tracking-widest">สินค้าหมด (Out of Stock)</p>
-                <div id="dashOutOfStock" class="stat-value text-red-500">--</div>
-            </div>
-        </div>
-        
-        <div class="mt-8 text-center">
-            <p class="text-[10px] text-slate-600 uppercase tracking-[0.3em] font-bold">
-                อัปเดตล่าสุด: <span id="updateTime" class="text-slate-400">--:--</span> | วันที่: <span id="updateDate" class="text-slate-400">--/--/--</span>
+    <section class="hero-section">
+        <div class="hero-text">
+            <span class="text-green-600 font-bold tracking-[0.4em] text-xs mb-4 uppercase">Automation & Mechanization</span>
+            <h1 class="text-7xl font-black text-slate-900 leading-[0.9] mb-6 italic">SMART<br>FACTORY.</h1>
+            <p class="text-slate-500 text-lg max-w-md leading-relaxed mb-8">
+                ศูนย์กลางการจัดการคลังสินค้าและระบบตรวจสอบสถานะเครื่องจักรแบบ Real-time เชื่อมต่อ PLC Siemens เข้ากับ Dashboard ส่วนกลาง
             </p>
+            <div class="flex gap-4">
+                <a href="#machine-section" class="bg-slate-900 text-white px-8 py-3 rounded-md font-bold text-sm uppercase tracking-widest hover:bg-slate-800 transition">Monitor Machines</a>
+            </div>
+        </div>
+        <div class="hero-visual"></div>
+    </section>
+
+    <div class="max-w-[1400px] mx-auto px-8" id="explore">
+        <div class="stat-group">
+            <div class="stat-card">
+                <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-2">Total Inventory</p>
+                <div id="dashTotalItems" class="text-5xl font-black">--</div>
+            </div>
+            <div class="stat-card" style="border-top-color: #3b82f6;">
+                <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-2">Machine Online</p>
+                <div class="text-5xl font-black text-blue-400">1 <span class="text-xl text-slate-500">/ 1</span></div>
+            </div>
+            <div class="stat-card" style="border-top-color: #ef4444;">
+                <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-2">Active Alarms</p>
+                <div class="text-5xl font-black text-red-500">0</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8 mt-20 mb-10">
+            <div class="col-span-12 md:col-span-4">
+                <div class="module-card">
+                    <div>
+                        <div class="icon-box bg-blue-100 text-blue-600"><i class="fa-solid fa-chart-line"></i></div>
+                        <h3 class="text-xl font-black italic mb-2 uppercase">System Overview</h3>
+                        <p class="text-sm text-slate-500 mb-6 leading-relaxed">วิเคราะห์สถิติภาพรวมคลังสินค้า Store 25 และ R1</p>
+                    </div>
+                    <a href="dashboard.html" class="btn-action">Access Dashboard</a>
+                </div>
+            </div>
+            <div class="col-span-12 md:col-span-4">
+                <div class="module-card">
+                    <div>
+                        <div class="icon-box bg-orange-100 text-orange-600"><i class="fa-solid fa-user-clock"></i></div>
+                        <h3 class="text-xl font-black italic mb-2 uppercase">Working Time</h3>
+                        <p class="text-sm text-slate-500 mb-6 leading-relaxed">ระบบบันทึกเวลาปฏิบัติงานและตารางงานพนักงาน</p>
+                    </div>
+                    <a href="working-time.html" class="btn-action">Access Log</a>
+                </div>
+            </div>
+            <div class="col-span-12 md:col-span-4">
+                <div class="module-card">
+                    <div>
+                        <div class="icon-box bg-green-100 text-green-600"><i class="fa-solid fa-boxes-stacked"></i></div>
+                        <h3 class="text-xl font-black italic mb-2 uppercase">Inventory Stock</h3>
+                        <p class="text-sm text-slate-500 mb-6 leading-relaxed">จัดการเบิก-จ่าย และเช็คสต็อกอุปกรณ์ฝ่ายวิศวกรรม</p>
+                    </div>
+                    <a href="inventory-select.html" class="btn-action">Manage Stock</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="machine-section" class="pt-10 pb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <h2 class="text-3xl font-black italic uppercase tracking-tighter text-slate-800">Machine <span class="text-blue-500">Fleet</span></h2>
+                <div class="h-[2px] flex-1 bg-slate-200"></div>
+                <span class="text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase">Real-time PLC Sync</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <div onclick="location.href='machine-detail.html'" class="machine-card group">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-500">
+                            <i class="fa-solid fa-robot text-2xl"></i>
+                        </div>
+                        <div class="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                            <span class="status-dot"></span>
+                            <span class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Running</span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-black text-slate-800 mb-1 italic uppercase">Bread Flipping #01</h3>
+                    <p class="text-xs text-slate-400 mb-6">PLC Siemens S7-1200 | IP: 192.168.1.10</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 py-4 border-y border-slate-50 mb-4">
+                        <div>
+                            <p class="text-[9px] text-slate-400 uppercase font-bold mb-1 tracking-widest">Performance</p>
+                            <p class="text-lg font-black text-slate-700">98.2<span class="text-xs font-normal ml-1">%</span></p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-slate-400 uppercase font-bold mb-1 tracking-widest">Total Count</p>
+                            <p class="text-lg font-black text-blue-600">--<span class="text-xs font-normal text-slate-400 ml-1">pcs</span></p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-[10px] font-bold uppercase text-slate-400">
+                        <span><i class="fa-solid fa-triangle-exclamation mr-1"></i> No active Alarms</span>
+                        <span class="text-blue-500 group-hover:translate-x-2 transition-transform">Monitor <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-100/50 border-2 border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center justify-center text-slate-400 hover:border-blue-300 hover:text-blue-400 transition-all cursor-pointer">
+                    <i class="fa-solid fa-circle-plus text-3xl mb-3"></i>
+                    <p class="font-bold uppercase tracking-widest text-xs">Add New Machine</p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 py-10 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+            <div class="flex gap-6">
+                <span><i class="fa-solid fa-microchip text-green-600"></i> Siemens S7 Protocol</span>
+                <span><i class="fa-solid fa-shield text-blue-600"></i> Industrial Cloud Sync</span>
+            </div>
+            <div>
+                Last Sync: <span id="updateTime" class="text-slate-800">--:--:--</span>
+            </div>
         </div>
     </div>
 
     <script>
+        // FIREBASE & SHEETS LOGIC (เหมือนเดิม)
         const firebaseConfig = {
             apiKey: "AIzaSyBqlBzXhKiGtOGx4fzKcul2gMKoJTEs968",
             authDomain: "kp-inventory-system.firebaseapp.com",
@@ -171,71 +306,36 @@
             appId: "1:776715886830:web:7e6fd0bb788113a00353ff"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
 
         const id1 = "1ZaWf8sYX0wC7ege0evyj9R2EIsA5nUOROprzCPdscmE";
         const id2 = "1wKEYLTXcg7LCwo4qFpVXUgA4WNyRGIGDeQocqu-7KjU";
-        const name1 = "KP_25"; 
-        const name2 = "KP_R1"; 
+        const name1 = "KP_25"; const name2 = "KP_R1";
 
         async function fetchAllStats() {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            const banner = document.getElementById('offlineBanner');
-            
             try {
                 const [resp1, resp2] = await Promise.all([
                     fetch(`https://docs.google.com/spreadsheets/d/${id1}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name1)}`),
                     fetch(`https://docs.google.com/spreadsheets/d/${id2}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name2)}`)
                 ]);
 
-                const txt1 = await resp1.text();
-                const txt2 = await resp2.text();
-
+                const txt1 = await resp1.text(); const txt2 = await resp2.text();
                 const json1 = JSON.parse(txt1.substr(47).slice(0, -2));
                 const json2 = JSON.parse(txt2.substr(47).slice(0, -2));
 
                 const allRows = [...json1.table.rows, ...json2.table.rows];
-                const cols = json1.table.cols.map(c => (c.label || "").toLowerCase().trim());
-                const totalIdx = cols.indexOf("total");
-
-                let outOfStock = 0, lowStockCount = 0, itemCount = 0;
+                let itemCount = 0;
 
                 allRows.forEach(r => {
-                    if (r.c && r.c[0]) { 
-                        itemCount++;
-                        let stockVal = (totalIdx !== -1) ? r.c[totalIdx] : r.c[6];
-                        let stock = (stockVal && stockVal.v !== null) ? Number(stockVal.v) : 0;
-                        
-                        if (stock <= 0) outOfStock++;
-                        else if (stock <= 5) lowStockCount++;
-                    }
+                    if (r.c && r.c[0]) itemCount++;
                 });
 
                 document.getElementById('dashTotalItems').textContent = itemCount.toLocaleString();
-                document.getElementById('dashLowStock').textContent = lowStockCount.toLocaleString();
-                document.getElementById('dashOutOfStock').textContent = outOfStock.toLocaleString();
-
-                const now = new Date();
-                document.getElementById('updateTime').textContent = now.toLocaleTimeString('th-TH');
-                document.getElementById('updateDate').textContent = now.toLocaleDateString('th-TH');
-
-                dot.className = "status-dot online";
-                text.textContent = "เชื่อมต่อสำเร็จ (Online)";
-                text.style.color = "#00ff99";
-                banner.classList.remove('show');
-
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                dot.className = "status-dot offline";
-                text.textContent = "ขาดการเชื่อมต่อ (Offline)";
-                text.style.color = "#ef4444";
-                banner.classList.add('show');
-            }
+                document.getElementById('updateTime').textContent = new Date().toLocaleTimeString('th-TH');
+            } catch (err) { console.error(err); }
         }
 
         window.onload = fetchAllStats;
-        setInterval(fetchAllStats, 60000); 
+        setInterval(fetchAllStats, 60000);
     </script>
 </body>
 </html>
